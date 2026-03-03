@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mi Cuenta - Marketplace Artesanal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f4a4b4",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0d2922",
+                        "verde-profundo": "#0d2922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-menu { background-color: #f4a4b4 !important; color: #0d2922 !important; font-weight: 600 !important; }
+        .section-content { display: none; animation: fadeIn 0.3s ease; }
+        .section-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .menu-btn { transition: all 0.3s ease; }
+        .menu-btn:hover:not(.active-menu) { background-color: rgba(244, 164, 180, 0.2); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display">
+<!-- HEADER FIJO -->
+<header class="fixed top-0 z-50 w-full h-[70px] bg-verde-profundo flex items-center justify-between px-10 shadow-lg">
+<div class="flex items-center gap-8">
+<a href="inicio.html" class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">shopping_bag</span>
+<h1 class="text-white text-xl font-bold tracking-tight">LocalMarket</h1>
+</a>
+</div>
+<div class="flex flex-1 max-w-xl mx-10">
+<div class="relative w-full flex items-center">
+<div class="absolute left-3 text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="w-full h-10 pl-10 pr-12 rounded-lg border-none bg-slate-100 focus:ring-2 focus:ring-primary text-sm" placeholder="Buscar productos..." type="text" data-search-input/>
+<button class="absolute right-1 top-1/2 -translate-y-1/2 bg-primary text-verde-profundo p-1.5 rounded-md hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-sm">tune</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<a href="carrito.html" class="text-white hover:text-primary transition-colors flex items-center relative" data-cart-badge>
+<span class="material-symbols-outlined">shopping_cart</span>
+</a>
+<a href="mi perfil.html" class="text-white hover:text-primary transition-colors flex items-center">
+<span class="material-symbols-outlined">account_circle</span>
+</a>
+</div>
+</header>
+<!-- MAIN CONTENT - 2 COLUMNAS -->
+<main class="flex-1 max-w-[1440px] mx-auto w-full flex bg-white dark:bg-background-dark min-h-[calc(100vh-160px)] pt-[70px]">
+<!-- SIDEBAR IZQUIERDA -->
+<aside class="w-[280px] bg-verde-profundo text-slate-100 flex flex-col p-6 border-r border-slate-800 shrink-0">
+<div class="flex flex-col items-center text-center mb-10">
+<div class="size-24 rounded-full border-4 border-primary/30 p-1 mb-4">
+<img class="w-full h-full object-cover rounded-full" alt="Avatar de perfil de usuario profesional" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdgxuOYEXDKx-zu_UatR-_EC6kmQZpsszFdVsVsptxJeiUEOGKE-5RMXZRQmUVpOMnJ3JMmw3T1-w46MUkvnki1UiN9qmZ5gkaEV3gf09gpXbgQcAt1x-yE5HyzaYYN6l7yTix2KLg_IRJzRkkw-yaga-fbEDEEP772VfD2rMAvrGQl1Z4Nxk3Gd8UIL0i7xwWJ4ODnlVWQAy0bix8j4uppG5vBUBzuh9V-TPa5Fj6KfcGPSGtu6t_gjl2XT08I0QRneLFrdURi60H"/>
+</div>
+<h2 class="text-lg font-bold" id="sidebar-user-name">Carlos Rodríguez</h2>
+<p class="text-xs text-slate-400 mt-1" id="sidebar-user-member">Miembro desde Enero 2024</p>
+</div>
+<nav class="flex flex-col gap-2 flex-1">
+<button class="menu-btn flex items-center gap-3 px-4 py-3 rounded-lg active-menu font-semibold transition-all w-full text-left" data-menu="profile" onclick="switchTab('profile')">
+<span class="material-symbols-outlined">person</span>
+<span>Mis datos</span>
+</button>
+<button class="menu-btn flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all text-slate-300 w-full text-left" data-menu="orders" onclick="switchTab('orders')">
+<span class="material-symbols-outlined">package_2</span>
+<span>Mis pedidos</span>
+</button>
+<button class="menu-btn flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all text-slate-300 w-full text-left" data-menu="addresses" onclick="switchTab('addresses')">
+<span class="material-symbols-outlined">map</span>
+<span>Direcciones</span>
+</button>
+<div class="border-t border-slate-800 pt-4 mt-4">
+<button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-500/20 text-red-400 transition-all w-full text-left" id="logout-btn" onclick="logout()">
+<span class="material-symbols-outlined">logout</span>
+<span>Cerrar sesión</span>
+</button>
+</div>
+</nav>
+</aside>
+<!-- CONTENIDO DERECHA -->
+<section class="flex-1 p-10 overflow-y-auto bg-slate-50/50 dark:bg-slate-900/20">
+<!-- SECCIÓN: MIS DATOS -->
+<div class="section-content active mb-12 bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" id="section-profile">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary text-3xl">badge</span>
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white">Mis datos personales</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Gestiona tu información de contacto y perfil</p>
+</div>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="profile-form" onsubmit="saveProfile(event)">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Nombre completo</label>
+<input class="w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-primary focus:ring-primary" type="text" value="Carlos Rodríguez" id="profile-name"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Correo electrónico</label>
+<input class="w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-primary focus:ring-primary" type="email" value="carlos.rodriguez@example.com" id="profile-email"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Teléfono</label>
+<input class="w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-primary focus:ring-primary" type="tel" value="+34 600 000 000" id="profile-phone"/>
+</div>
+<div class="flex items-end">
+<button class="bg-primary text-verde-profundo px-6 py-2.5 rounded-lg font-bold hover:bg-primary/90 transition-all" type="submit">Guardar cambios</button>
+</div>
+</form>
+</div>
+<!-- SECCIÓN: MIS PEDIDOS -->
+<div class="section-content mb-12 bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" id="section-orders">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary text-3xl">shopping_bag</span>
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white">Mis pedidos</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Historial de tus compras recientes</p>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="border-b border-slate-100 dark:border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+<th class="pb-4 font-medium">Pedido ID</th>
+<th class="pb-4 font-medium">Fecha</th>
+<th class="pb-4 font-medium">Total</th>
+<th class="pb-4 font-medium">Estado</th>
+</tr>
+</thead>
+<tbody class="text-sm" id="orders-table-body">
+<tr class="border-b border-slate-50 dark:border-slate-700">
+<td class="py-4 font-medium text-slate-900 dark:text-white">#ART-8942</td>
+<td class="py-4 text-slate-600 dark:text-slate-400">12 Feb, 2024</td>
+<td class="py-4 text-slate-900 dark:text-white font-semibold">Q 45.50</td>
+<td class="py-4"><span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Entregado</span></td>
+</tr>
+<tr class="border-b border-slate-50 dark:border-slate-700">
+<td class="py-4 font-medium text-slate-900 dark:text-white">#ART-8821</td>
+<td class="py-4 text-slate-600 dark:text-slate-400">05 Feb, 2024</td>
+<td class="py-4 text-slate-900 dark:text-white font-semibold">Q 120.00</td>
+<td class="py-4"><span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">En camino</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- SECCIÓN: DIRECCIONES -->
+<div class="section-content bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" id="section-addresses">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">location_on</span>
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white">Direcciones</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Tus lugares de entrega guardados</p>
+</div>
+</div>
+<button class="flex items-center gap-2 border-2 border-primary text-verde-profundo dark:text-primary px-4 py-2 rounded-lg font-bold hover:bg-primary/10 transition-all" onclick="addNewAddress()">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Agregar nueva
+                    </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="addresses-container">
+<div class="border-2 border-primary/20 bg-primary/5 dark:bg-primary/10 p-5 rounded-xl flex flex-col gap-2 relative">
+<span class="absolute top-4 right-4 bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">PREDETERMINADA</span>
+<h4 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">home</span>
+                    Casa
+                </h4>
+<p class="text-sm text-slate-600 dark:text-slate-400">Calle Mayor 123, 4ºB<br/>28001 Madrid, España</p>
+<div class="flex gap-4 mt-4 text-xs font-bold uppercase tracking-tight">
+<button class="text-verde-profundo dark:text-primary hover:underline" onclick="editAddress('1')">Editar</button>
+<button class="text-slate-400 hover:text-red-500" onclick="deleteAddress('1')">Eliminar</button>
+</div>
+</div>
+<div class="border border-slate-200 dark:border-slate-600 p-5 rounded-xl flex flex-col gap-2 relative dark:bg-slate-700/30">
+<h4 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">work</span>
+                    Oficina
+                </h4>
+<p class="text-sm text-slate-600 dark:text-slate-400">Av. de la Castellana 50<br/>28046 Madrid, España</p>
+<div class="flex gap-4 mt-4 text-xs font-bold uppercase tracking-tight">
+<button class="text-verde-profundo dark:text-primary hover:underline" onclick="editAddress('2')">Editar</button>
+<button class="text-slate-400 hover:text-red-500" onclick="deleteAddress('2')">Eliminar</button>
+<button class="text-primary hover:underline" onclick="setDefault('2')">Predeterminar</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- FOOTER FIJO -->
+<footer class="w-full bg-verde-profundo py-12 px-10 flex flex-col items-center justify-center text-center space-y-8 mt-auto">
+<div class="max-w-2xl flex flex-col items-center gap-4">
+<a href="inicio.html" class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-4xl">shopping_bag</span>
+<h2 class="text-white text-2xl font-black">LocalMarket</h2>
+</a>
+<p class="text-slate-300 text-sm leading-relaxed">
+    "Un solo lugar, muchas empresas, infinitas posibilidades."            </p>
+            <div class="flex items-center gap-6">
+                <a class="w-10 h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-primary hover:text-verde-profundo transition-all" href="#">
+                    <span class="material-symbols-outlined">mail</span>
+                </a>
+                <a class="w-10 h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-primary hover:text-verde-profundo transition-all" href="#">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                <a class="w-10 h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all" href="#">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="pt-8 border-t border-slate-800 w-full max-w-4xl">
+                <p class="text-slate-500 text-xs">© 2024 LocalMarket. All rights reserved.</p>
+            </div>
+</footer>
+
+<script>
+// Función para cambiar entre pestañas
+function switchTab(tabName) {
+    // Remover clase activa de todos los botones
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.classList.remove('active-menu');
+        btn.classList.add('text-slate-300');
+    });
+    
+    // Agregar clase activa al botón seleccionado
+    const activeBtn = document.querySelector(`[data-menu="${tabName}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active-menu');
+        activeBtn.classList.remove('text-slate-300');
+    }
+    
+    // Ocultar todas las secciones
+    document.querySelectorAll('.section-content').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Mostrar la sección seleccionada
+    const activeSection = document.getElementById(`section-${tabName}`);
+    if (activeSection) {
+        activeSection.classList.add('active');
+    }
+}
+
+// Guardar perfil
+function saveProfile(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('profile-name').value;
+    const email = document.getElementById('profile-email').value;
+    const phone = document.getElementById('profile-phone').value;
+    
+    // Aquí puedes agregar la lógica para guardar en localStorage o enviar al servidor
+    const userData = {
+        name: name,
+        email: email,
+        phone: phone
+    };
+    
+    // Guardar en localStorage
+    let currentUser = JSON.parse(localStorage.getItem('localmarket_user')) || {};
+    currentUser = { ...currentUser, ...userData };
+    localStorage.setItem('localmarket_user', JSON.stringify(currentUser));
+    
+    // Actualizar nombre en el sidebar
+    document.getElementById('sidebar-user-name').textContent = name;
+    
+    // Mostrar notificación
+    showToast('Perfil actualizado correctamente', 'success');
+}
+
+// Agregar nueva dirección
+function addNewAddress() {
+    const type = prompt('Tipo de dirección (Casa/Oficina/Otro):', 'Casa');
+    if (!type) return;
+    
+    const address = prompt('Dirección:', '');
+    if (!address) return;
+    
+    const city = prompt('Ciudad:', '');
+    if (!city) return;
+    
+    // Crear elemento de dirección
+    const container = document.getElementById('addresses-container');
+    const newId = Date.now().toString();
+    
+    const addressDiv = document.createElement('div');
+    addressDiv.className = 'border border-slate-200 dark:border-slate-600 p-5 rounded-xl flex flex-col gap-2 relative dark:bg-slate-700/30 animate-fade-in';
+    addressDiv.innerHTML = `
+        <h4 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">${type === 'Casa' ? 'home' : type === 'Oficina' ? 'work' : 'location_on'}</span>
+            ${type}
+        </h4>
+        <p class="text-sm text-slate-600 dark:text-slate-400">${address}<br/>${city}</p>
+        <div class="flex gap-4 mt-4 text-xs font-bold uppercase tracking-tight">
+            <button class="text-verde-profundo dark:text-primary hover:underline" onclick="editAddress('${newId}')">Editar</button>
+            <button class="text-slate-400 hover:text-red-500" onclick="deleteAddress('${newId}')">Eliminar</button>
+            <button class="text-primary hover:underline" onclick="setDefault('${newId}')">Predeterminar</button>
+        </div>
+    `;
+    
+    container.appendChild(addressDiv);
+    showToast('Dirección agregada correctamente', 'success');
+}
+
+// Editar dirección
+function editAddress(id) {
+    showToast('Función de edición próximamente', 'info');
+}
+
+// Eliminar dirección
+function deleteAddress(id) {
+    if (confirm('¿Estás seguro de eliminar esta dirección?')) {
+        const container = document.getElementById('addresses-container');
+        const addressDiv = document.querySelector(`[onclick="deleteAddress('${id}')"]`).closest('.border');
+        addressDiv.remove();
+        showToast('Dirección eliminada', 'success');
+    }
+}
+
+// Establecer como predeterminada
+function setDefault(id) {
+    // Remover clase de predeterminada de todas
+    document.querySelectorAll('#addresses-container > div').forEach(div => {
+        div.classList.remove('border-2', 'border-primary/20', 'bg-primary/5', 'dark:bg-primary/10');
+        div.classList.add('border', 'border-slate-200', 'dark:border-slate-600');
+        const badge = div.querySelector('.absolute.top-4');
+        if (badge) badge.remove();
+    });
+    
+    // Agregar clase al seleccionado
+    const selectedDiv = document.querySelector(`[onclick="setDefault('${id}')"]`).closest('.border');
+    selectedDiv.classList.remove('border', 'border-slate-200', 'dark:border-slate-600');
+    selectedDiv.classList.add('border-2', 'border-primary/20', 'bg-primary/5', 'dark:bg-primary/10');
+    
+    // Agregar badge
+    const badge = document.createElement('span');
+    badge.className = 'absolute top-4 right-4 bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold';
+    badge.textContent = 'PREDETERMINADA';
+    selectedDiv.appendChild(badge);
+    
+    showToast('Dirección predeterminada actualizada', 'success');
+}
+
+// Cerrar sesión
+function logout() {
+    if (confirm('¿Estás seguro de cerrar sesión?')) {
+        localStorage.removeItem('localmarket_user');
+        showToast('Sesión cerrada correctamente', 'success');
+        setTimeout(() => {
+            window.location.href = 'inicio.html';
+        }, 1000);
+    }
+}
+
+// Mostrar notificación tipo toast
+function showToast(message, type = 'success') {
+    // Remover toast existente
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) existingToast.remove();
+    
+    // Crear nuevo toast
+    const toast = document.createElement('div');
+    toast.className = `toast-notification fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform transition-all duration-300 translate-y-0 opacity-100`;
+    
+    // Colores según tipo
+    if (type === 'success') {
+        toast.style.backgroundColor = '#10b981';
+    } else if (type === 'error') {
+        toast.style.backgroundColor = '#ef4444';
+    } else {
+        toast.style.backgroundColor = '#3b82f6';
+    }
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Animación de entrada
+    requestAnimationFrame(() => {
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+    });
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+        toast.style.transform = 'translateY(20px)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Cargar datos del usuario al iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    const user = JSON.parse(localStorage.getItem('localmarket_user'));
+    if (user) {
+        if (user.name) {
+            document.getElementById('sidebar-user-name').textContent = user.name;
+            document.getElementById('profile-name').value = user.name;
+        }
+        if (user.email) {
+            document.getElementById('profile-email').value = user.email;
+        }
+        if (user.phone) {
+            document.getElementById('profile-phone').value = user.phone;
+        }
+    }
+    
+    // Actualizar badge del carrito
+    updateCartBadge();
+});
+
+// Actualizar badge del carrito
+function updateCartBadge() {
+    const cart = JSON.parse(localStorage.getItem('localmarket_cart')) || { items: [] };
+    const totalItems = cart.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    
+    const cartBadges = document.querySelectorAll('[data-cart-badge]');
+    cartBadges.forEach(badge => {
+        let countSpan = badge.querySelector('.cart-count');
+        if (!countSpan) {
+            countSpan = document.createElement('span');
+            countSpan.className = 'cart-count absolute -top-1 -right-1 bg-primary text-verde-profundo text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center';
+            badge.style.position = 'relative';
+            badge.appendChild(countSpan);
+        }
+        countSpan.textContent = totalItems > 9 ? '9+' : totalItems;
+        countSpan.style.display = totalItems > 0 ? 'flex' : 'none';
+    });
+}
+</script>
+<script src="scripts.js"></script>
+</body>
+</html>

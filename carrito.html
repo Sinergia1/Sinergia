@@ -1,0 +1,181 @@
+<html lang="es"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="styles.css">
+    <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#f4a4b4",
+                            "dark-green": "#0d2922",
+                            "background-light": "#f8f6f6",
+                            "background-dark": "#211114",
+                        },
+                        fontFamily: {
+                            "display": ["Inter"]
+                        },
+                        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    },
+                },
+            }
+        </script>
+    <title>Carrito de Compras - EcoArtesanal</title>
+    </head>
+    <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+    <!-- HEADER FIJO -->
+   <!-- HEADER FIJO -->
+<header class="fixed top-0 z-50 w-full h-[70px] bg-dark-green flex items-center justify-between px-10 shadow-lg">
+    <div class="flex items-center gap-8">
+    <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary text-3xl">shopping_bag</span>
+    <h1 class="text-white text-xl font-bold tracking-tight">LocalMarket</h1>
+    </div>
+    </div>
+    <div class="flex flex-1 max-w-xl mx-10">
+    <div class="relative w-full flex items-center">
+    <div class="absolute left-3 text-slate-400">
+    <span class="material-symbols-outlined text-[20px]">search</span>
+    </div>
+    <input class="w-full h-10 pl-10 pr-12 rounded-lg border-none bg-slate-100 focus:ring-2 focus:ring-primary text-sm" placeholder="Buscar productos..." type="text" data-search-input/>
+    <button class="absolute right-1 top-1/2 -translate-y-1/2 bg-primary text-dark-green p-1.5 rounded-md hover:bg-primary/90 transition-colors">
+    <span class="material-symbols-outlined text-sm">tune</span>
+    </button>
+    </div>
+    </div>
+    <div class="flex items-center gap-4">
+    <button class="text-white hover:text-primary transition-colors flex items-center relative" data-cart-badge>
+    <span class="material-symbols-outlined">shopping_cart</span>
+    </button>
+    <a href="inicio de secion.html" class="text-white hover:text-primary transition-colors flex items-center">
+    <span class="material-symbols-outlined">account_circle</span>
+    </a>
+    </div>
+    </header>
+    <main class="pt-[70px]">
+    
+    <!-- ESPACIADOR PARA HEADER FIJO -->
+    <div class="h-20"></div>
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-[1440px] mx-auto px-6 lg:px-20 py-10" data-cart-container>
+    <!-- Título -->
+    <div class="flex items-center gap-3 mb-8">
+    <span class="material-symbols-outlined text-dark-green text-4xl">shopping_basket</span>
+    <h2 class="text-3xl font-black text-dark-green tracking-tight">Tu carrito (<span data-cart-count>0</span>)</h2>
+    </div>
+    <div class="flex flex-col lg:flex-row gap-10">
+    <!-- COLUMNA IZQUIERDA: PRODUCTOS (60%) -->
+    <div class="lg:w-[60%] flex-1">
+    <div class="overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+    <table class="w-full text-left border-collapse">
+    <thead>
+    <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+    <th class="px-6 py-4 text-sm font-semibold text-slate-600 dark:text-slate-400">Producto</th>
+    <th class="px-6 py-4 text-sm font-semibold text-slate-600 dark:text-slate-400 text-center">Cantidad</th>
+    <th class="px-6 py-4 text-sm font-semibold text-slate-600 dark:text-slate-400 text-right">Subtotal</th>
+    <th class="px-6 py-4 text-sm font-semibold text-slate-600 dark:text-slate-400"></th>
+    </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100 dark:divide-slate-700" data-cart-table-body>
+    <!-- Los productos se cargarán dinámicamente -->
+    </tbody>
+    </table>
+    <div class="p-6 bg-slate-50/50 dark:bg-slate-900/30 flex justify-between items-center">
+    <button class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-dark-green font-medium transition-colors" data-clear-cart>
+    <span class="material-symbols-outlined text-xl">delete_sweep</span>
+                                Limpiar carrito
+                            </button>
+    <a class="text-primary font-bold hover:underline flex items-center gap-2" href="inicio.HTML">
+    <span class="material-symbols-outlined">arrow_back</span>
+                                Seguir comprando
+                            </a>
+    </div>
+    </div>
+    </div>
+    <!-- COLUMNA DERECHA: RESUMEN (35%) -->
+    <div class="lg:w-[35%]">
+    <div class="sticky top-28 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-8">
+    <h3 class="text-xl font-bold text-dark-green mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">Resumen del pedido</h3>
+    <div class="space-y-4 mb-8">
+    <div class="flex justify-between items-center">
+    <span class="text-slate-500">Subtotal</span>
+    <span class="font-semibold text-slate-800 dark:text-slate-200" data-cart-subtotal>Q 0.00</span>
+    </div>
+    <div class="flex justify-between items-center">
+    <span class="text-slate-500">Envío</span>
+    <span class="font-semibold text-slate-800 dark:text-slate-200" data-cart-shipping>Q 0.00</span>
+    </div>
+    <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+    <span class="text-lg font-bold text-dark-green">Total</span>
+    <span class="text-2xl font-black text-dark-green" data-cart-total>Q 0.00</span>
+    </div>
+    </div>
+    <div class="mb-8">
+    <p class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Método de pago</p>
+    <div class="grid grid-cols-2 gap-3">
+    <label class="cursor-pointer">
+    <input checked="" class="sr-only peer" name="payment" type="radio"/>
+    <div class="border-2 border-slate-100 dark:border-slate-700 rounded-lg p-3 text-center peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+    <span class="material-symbols-outlined block mb-1">payments</span>
+    <span class="text-xs font-semibold">Efectivo</span>
+    </div>
+    </label>
+    <label class="cursor-pointer">
+    <input class="sr-only peer" name="payment" type="radio"/>
+    <div class="border-2 border-slate-100 dark:border-slate-700 rounded-lg p-3 text-center peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+    <span class="material-symbols-outlined block mb-1">account_balance</span>
+    <span class="text-xs font-semibold">Transferencia</span>
+    </div>
+    </label>
+    </div>
+    </div>
+    <button class="w-full bg-dark-green text-white py-4 rounded-lg font-bold flex items-center justify-center gap-3 hover:bg-opacity-90 transition-all shadow-lg mb-6" data-whatsapp-order>
+    <svg class="w-6 h-6 fill-current" viewbox="0 0 24 24">
+    <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.284l-.582 2.166 2.207-.58c.95.517 2.008.797 3.125.797 3.187 0 5.764-2.577 5.764-5.766s-2.577-5.867-5.765-5.867zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217s.231.001.332.005c.109.004.258-.041.404.314.159.389.541 1.32.589 1.42.048.101.08.217.012.346-.067.129-.101.21-.201.329-.1.119-.213.268-.304.359-.101.101-.207.21-.089.412.119.202.529.873 1.138 1.415.783.697 1.442.912 1.644 1.013.202.101.32-.08.438-.217l.317-.461c.119-.173.231-.144.387-.087s.988.475 1.157.561c.17.086.284.129.324.201s.04.417-.104.822z"></path>
+    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.131c-5.036 0-9.132-4.095-9.132-9.131 0-5.036 4.096-9.132 9.132-9.132s9.131 4.096 9.131 9.132c0 5.036-4.095 9.131-9.131 9.131z"></path>
+    </svg>
+                            Completar pedido por WhatsApp
+                        </button>
+    <div class="flex items-center gap-2 justify-center text-xs text-slate-400">
+    <span class="material-symbols-outlined text-sm">lock</span>
+                            Transacción segura y local
+                        </div>
+    </div>
+    </div>
+    </div>
+    </main>
+    <!-- FOOTER FIJO -->
+<footer class="w-full bg-dark-green py-12 px-10 flex flex-col items-center justify-center text-center space-y-8 mt-12">
+    <div class="max-w-2xl flex flex-col items-center gap-4">
+    <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary text-4xl">shopping_bag</span>
+    <h2 class="text-white text-2xl font-black">LocalMarket</h2>
+    </div>
+    <p class="text-slate-300 text-sm leading-relaxed">
+        “Un solo lugar, muchas empresas, infinitas posibilidades.”            </p>
+                <div class="flex items-center gap-6">
+                    <a class="w-10 h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-primary hover:text-verde-profundo transition-all" href="#">
+                        <span class="material-symbols-outlined">mail</span>
+                    </a>
+                    <a class="w-10 h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-primary hover:text-verde-profundo transition-all" href="#">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </a>
+                    <a class="w-10 h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all" href="#">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="pt-8 border-t border-slate-800 w-full max-w-4xl">
+                    <p class="text-slate-500 text-xs">© 2024 LocalMarket. Todos los derechos reservados.</p>
+                </div>
+    </footer>
+    <script src="scripts.js"></script>
+    </body></html>
