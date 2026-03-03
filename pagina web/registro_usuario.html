@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LocalMarket - Registrarse</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link rel="stylesheet" href="styles.css"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0B2319",
+                        "background-light": "#0B2319",
+                        "background-dark": "#05110c",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "8px",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .input-group:focus-within .material-icons-outlined {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center">
+<header class="w-full py-12 flex justify-center items-center">
+<a href="inicio.HTML" class="flex items-center gap-2 text-white">
+<span class="material-icons-outlined text-3xl">shopping_bag</span>
+<h1 class="text-2xl font-bold tracking-tight">LocalMarket</h1>
+</a>
+</header>
+<main class="flex-grow flex items-center justify-center px-4 w-full">
+<div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-8 md:p-10 mb-12">
+<h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Registrarse</h2>
+<form class="space-y-5">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="nombre">Nombre</label>
+<div class="relative input-group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-icons-outlined text-gray-400 text-xl">person</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400" id="nombre" name="nombre" placeholder="Nombre" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="email">Correo Electrónico</label>
+<div class="relative input-group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-icons-outlined text-gray-400 text-xl">mail</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400" id="email" name="email" placeholder="Correo Electrónico" type="email"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="password">Contraseña</label>
+<div class="relative input-group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-icons-outlined text-gray-400 text-xl">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400" id="password" name="password" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors" type="button" data-toggle-password="password">
+<span class="material-icons-outlined text-xl">visibility</span>
+</button>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="confirm_password">Confirmar Contraseña</label>
+<div class="relative input-group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-icons-outlined text-gray-400 text-xl">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-zinc-700 rounded-lg focus:ring-primary focus:border-primary bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400" id="confirm_password" name="confirm_password" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors" type="button" data-toggle-password="confirm_password">
+<span class="material-icons-outlined text-xl">visibility</span>
+</button>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-emerald-950 text-white font-semibold py-3.5 px-4 rounded-lg transition duration-200 mt-4 shadow-lg flex items-center justify-center" type="submit">
+                    Crear Cuenta
+                </button>
+</form>
+<div class="mt-8 text-center">
+<p class="text-gray-600 dark:text-gray-400 text-sm">
+                    ¿Ya tienes cuenta? <a class="text-rose-400 hover:text-rose-500 font-medium ml-1" href="inicio_secion.html">Iniciar Sesión</a>
+</p>
+</div>
+</div>
+</main>
+<footer class="w-full pb-12 mt-auto flex flex-col items-center space-y-6">
+<a href="inicio.HTML" class="flex items-center gap-2 text-white opacity-90">
+<span class="material-icons-outlined text-2xl">shopping_bag</span>
+<span class="text-xl font-bold tracking-tight">LocalMarket</span>
+</a>
+<p class="text-gray-300 text-sm italic px-6 text-center">
+            "Un solo lugar, muchas empresas, infinitas posibilidades."
+        </p>
+<div class="flex space-x-6">
+<a class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-white hover:bg-white hover:text-primary transition-all" href="#">
+<span class="material-icons-outlined text-lg">mail</span>
+</a>
+<a class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-white hover:bg-white hover:text-primary transition-all" href="#">
+<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
+</a>
+<a class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-white hover:bg-white hover:text-primary transition-all" href="#">
+<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"></path></svg>
+</a>
+</div>
+<p class="text-gray-500 text-xs font-light">
+            © 2024 LocalMarket. Todos los derechos reservados.
+        </p>
+</footer>
+<script src="script.js"></script>
+</body></html>
