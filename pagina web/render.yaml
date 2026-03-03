@@ -1,0 +1,14 @@
+services:
+  - type: static
+    name: localmarket
+    runtime: static
+    buildCommand: echo "No build needed"
+    publishPath: .  # CAMBIADO: antes era staticPublishPath
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /inicio.html
