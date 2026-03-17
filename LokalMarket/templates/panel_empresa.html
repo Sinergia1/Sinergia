@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Panel de Empresa - LocalMarket</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f6f6; overflow-x: hidden; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        
+        /* Estilos para el menú activo */
+        .active-tab {
+            background-color: #f4a4b4 !important;
+            color: #0d2922 !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Animación para el modal flotante */
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-animation {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        /* Estilo para la previsualización de imagen */
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px dashed #f4a4b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f4a4b4;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-preview:hover {
+            border-color: #0d2922;
+            color: #0d2922;
+        }
+        
+        .image-preview.has-image {
+            border: 2px solid #10b981;
+        }
+        
+        @media (min-width: 640px) {
+            .image-preview {
+                height: 200px;
+            }
+        }
+        
+        /* Spinner de carga */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f4a4b4;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        
+        @media (min-width: 640px) {
+            .spinner {
+                width: 40px;
+                height: 40px;
+                margin: 20px auto;
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Badges para categorías */
+        .category-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f4a4b4;
+            color: #0d2922;
+        }
+        
+        @media (min-width: 640px) {
+            .category-badge {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+        
+        .category-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .category-badge.selected {
+            background-color: #0d2922 !important;
+            color: white !important;
+        }
+        
+        /* Scroll suave */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        
+        /* Estilo para el botón de cerrar sesión */
+        .logout-btn {
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: #ef4444 !important;
+            color: white !important;
+        }
+        
+        /* Grid de productos */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.5rem;
+            }
+        }
+        
+        /* Estilo para las tarjetas de categorías */
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        @media (min-width: 640px) {
+            .category-card {
+                padding: 20px;
+            }
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(244, 164, 180, 0.2);
+            border-color: #f4a4b4;
+        }
+        
+        .category-icon {
+            font-size: 32px;
+            color: #f4a4b4;
+            margin-bottom: 6px;
+        }
+        
+        @media (min-width: 640px) {
+            .category-icon {
+                font-size: 48px;
+                margin-bottom: 12px;
+            }
+        }
+        
+        .category-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0d2922;
+            margin-bottom: 4px;
+        }
+        
+        @media (min-width: 640px) {
+            .category-name {
+                font-size: 18px;
+                margin-bottom: 8px;
+            }
+        }
+        
+        .category-count {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        
+        @media (min-width: 640px) {
+            .category-count {
+                font-size: 14px;
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 100;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar-mobile.open {
+                left: 0;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+            }
+            
+            .sidebar-overlay.open {
+                display: block;
+            }
+            
+            .mobile-menu-button {
+                display: block;
+            }
+            
+            .desktop-menu {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-menu-button {
+                display: none;
+            }
+            
+            .desktop-menu {
+                display: flex;
+            }
+        }
+        
+        /* Toast personalizado */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 13px;
+            max-width: 90%;
+        }
+        
+        @media (min-width: 640px) {
+            .toast {
+                font-size: 14px;
+                padding: 12px 24px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .toast {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                text-align: center;
+            }
+        }
+        
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.info { background-color: #3b82f6; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Overlay para menú móvil -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <!-- Botón menú móvil -->
+    <button id="mobileMenuButton" class="mobile-menu-button fixed bottom-4 right-4 z-50 bg-primary text-dark-green p-3 rounded-full shadow-lg" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <!-- Overlay para el modal -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity"></div>
+    
+    <!-- MODAL FLOTANTE PARA AGREGAR PRODUCTOS -->
+    <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-animation">
+            <!-- Cabecera del modal -->
+            <div class="bg-gradient-to-r from-[#0d2922] to-[#1a4a3a] text-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl md:text-4xl text-[#f4a4b4]">add_business</span>
+                        <div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold">Agregar producto</h2>
+                            <p class="text-white/80 text-xs sm:text-sm mt-1">Completa los datos</p>
+                        </div>
+                    </div>
+                    <button onclick="closeProductModal()" class="text-white/80 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Formulario -->
+            <form id="productForm" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+                <div>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                        Nombre <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="productName" required
+                           class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none transition-all text-sm"
+                           placeholder="Ej. Jabón artesanal">
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                            Precio <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm sm:text-base">$</span>
+                            <input type="number" id="productPrice" step="0.01" min="0" required
+                                   class="w-full pl-7 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                                   placeholder="0.00">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                            Stock <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" id="productStock" min="0" required
+                               class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                               placeholder="0">
+                    </div>
+                </div>
+                
+                <!-- CATEGORÍAS -->
+                <div>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                        Categoría <span class="text-red-500">*</span>
+                    </label>
+                    
+                    <div class="flex gap-2 mb-3 sm:mb-4">
+                        <input type="text" id="newCategoryInput" 
+                               class="flex-1 px-3 sm:px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                               placeholder="Nueva categoría...">
+                        <button type="button" onclick="addNewCategory()"
+                                class="bg-[#f4a4b4] text-[#0d2922] px-4 sm:px-6 py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center gap-1 sm:gap-2 text-sm">
+                            <span class="material-symbols-outlined text-sm">add</span>
+                            <span class="hidden xs:inline">Agregar</span>
+                        </button>
+                    </div>
+                    
+                    <div id="categoriesContainer" class="flex flex-wrap gap-2 p-3 sm:p-4 bg-gray-50 rounded-lg min-h-[60px] sm:min-h-[80px] border border-gray-100">
+                        <!-- Las categorías se cargarán dinámicamente -->
+                        <div class="text-gray-400 w-full text-center py-2 sm:py-4 text-xs sm:text-sm">No hay categorías. ¡Crea la primera!</div>
+                    </div>
+                    
+                    <input type="hidden" id="selectedCategory" required>
+                </div>
+                
+                <!-- SUBIR IMAGEN -->
+                <div>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                        Imagen <span class="text-red-500">*</span>
+                    </label>
+                    
+                    <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    
+                    <div id="imagePreview" class="image-preview" onclick="document.getElementById('productImageFile').click()">
+                        <div class="text-center">
+                            <span class="material-symbols-outlined text-2xl sm:text-4xl mb-1 sm:mb-2 block">add_photo_alternate</span>
+                            <span class="text-xs sm:text-sm">Haz clic para subir</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-2">
+                        <span class="material-symbols-outlined text-xs align-middle">info</span>
+                        Formatos: JPG, PNG, GIF. Máx: 5MB
+                    </p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-100">
+                    <button type="submit"
+                            class="flex-1 bg-[#0d2922] text-white py-3 sm:py-4 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base">
+                        <span class="material-symbols-outlined">publish</span>
+                        Publicar
+                    </button>
+                    <button type="button" onclick="closeProductModal()"
+                            class="px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-200 rounded-lg font-bold text-gray-600 hover:bg-gray-50 transition-all text-sm sm:text-base">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="flex h-screen">
+        <!-- Sidebar - responsive -->
+        <aside id="sidebar" class="sidebar-mobile md:static md:w-64 bg-[#0d2922] text-white flex flex-col h-full">
+            <div class="p-4 sm:p-6">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#f4a4b4] text-2xl sm:text-3xl">shopping_bag</span>
+                    <h1 class="text-lg sm:text-xl font-bold">LocalMarket</h1>
+                </div>
+                <p class="text-xs text-white/60 mt-1 uppercase tracking-widest">PANEL DE EMPRESA</p>
+            </div>
+            
+            <!-- Info de la empresa -->
+            <div class="px-4 sm:px-6 pb-4 border-b border-white/10 mb-4">
+                <div class="bg-white/10 rounded-lg p-2 sm:p-3">
+                    <p class="text-xs text-white/60">Tu empresa:</p>
+                    <p class="font-bold text-[#f4a4b4] text-base sm:text-lg" id="empresa-nombre-panel">Mi Empresa</p>
+                </div>
+            </div>
+            
+            <!-- Menú de navegación -->
+            <nav class="flex-1 px-3 sm:px-4" id="empresa-menu">
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left active-tab text-xs sm:text-sm" data-section="inicio" onclick="EmpresaPanelManager.loadSection('inicio')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">home</span>
+                    <span>Inicio</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="productos" onclick="EmpresaPanelManager.loadSection('productos')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">inventory_2</span>
+                    <span>Productos</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="categorias" onclick="EmpresaPanelManager.loadSection('categorias')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">category</span>
+                    <span>Categorías</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="pedidos" onclick="EmpresaPanelManager.loadSection('pedidos')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">format_text_clip</span>
+                    <span>Pedidos</span>
+                </button>
+            </nav>
+            
+            <!-- Info del usuario y botón cerrar sesión -->
+            <div class="p-3 sm:p-4 border-t border-white/10 space-y-3">
+                <div class="flex items-center gap-2 sm:gap-3 px-2 py-2">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f4a4b4]/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[#f4a4b4] text-base sm:text-lg">business</span>
+                    </div>
+                    <div>
+                        <p class="text-xs sm:text-sm font-semibold" id="user-name">Carlos López</p>
+                        <p class="text-[10px] sm:text-xs text-white/60" id="user-email">panaderia@test.com</p>
+                    </div>
+                </div>
+                
+                <!-- BOTÓN CERRAR SESIÓN - CORREGIDO: llama a AuthManager.logout() -->
+                <button onclick="AuthManager.logout()" class="logout-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-all text-xs sm:text-sm">
+                    <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                    <span>Cerrar sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+            <!-- Header superior -->
+            <header class="h-14 sm:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-4 md:px-8 shadow-sm">
+                <h1 class="text-base sm:text-lg md:text-xl font-bold text-[#0d2922]" id="section-title">Inicio</h1>
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <button onclick="openProductModal()" 
+                            class="bg-[#0d2922] text-white px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center gap-1 sm:gap-2 shadow-md text-xs sm:text-sm">
+                        <span class="material-symbols-outlined text-sm sm:text-base">add</span>
+                        <span class="hidden xs:inline">Nuevo</span>
+                    </button>
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#f4a4b4]/20 overflow-hidden flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[#f4a4b4] text-sm sm:text-base">person</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Contenido scrollable -->
+            <div class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8 smooth-scroll" id="mainContent">
+                <!-- SECCIÓN INICIO -->
+                <div class="section-content active" id="section-inicio">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="mb-4 sm:mb-6 md:mb-8">
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Bienvenido a tu panel</h2>
+                            <p class="text-xs sm:text-sm text-gray-500">Gestiona tus productos y visualiza tus ventas</p>
+                        </div>
+                        
+                        <!-- Tarjetas de estadísticas -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 md:p-6">
+                                <div class="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
+                                    <span class="material-symbols-outlined text-xl sm:text-2xl md:text-3xl text-[#f4a4b4]">inventory_2</span>
+                                    <span class="text-xl sm:text-2xl md:text-3xl font-bold text-[#0d2922]" id="stats-productos">0</span>
+                                </div>
+                                <h3 class="text-xs sm:text-sm text-gray-600 font-medium">Productos activos</h3>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 md:p-6">
+                                <div class="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
+                                    <span class="material-symbols-outlined text-xl sm:text-2xl md:text-3xl text-[#f4a4b4]">category</span>
+                                    <span class="text-xl sm:text-2xl md:text-3xl font-bold text-[#0d2922]" id="stats-categorias">0</span>
+                                </div>
+                                <h3 class="text-xs sm:text-sm text-gray-600 font-medium">Categorías</h3>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 md:p-6">
+                                <div class="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
+                                    <span class="material-symbols-outlined text-xl sm:text-2xl md:text-3xl text-[#f4a4b4]">sell</span>
+                                    <span class="text-xl sm:text-2xl md:text-3xl font-bold text-[#0d2922]" id="stats-ventas">0</span>
+                                </div>
+                                <h3 class="text-xs sm:text-sm text-gray-600 font-medium">Ventas totales</h3>
+                            </div>
+                        </div>
+                        
+                        <!-- SECCIÓN DE CATEGORÍAS -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 md:p-6 mb-6 sm:mb-8">
+                            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                                <h3 class="text-base sm:text-lg font-bold text-[#0d2922] flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[#f4a4b4]">category</span>
+                                    Tus Categorías
+                                </h3>
+                                <button onclick="EmpresaPanelManager.loadSection('categorias')" class="text-xs sm:text-sm text-[#f4a4b4] hover:underline font-medium">
+                                    Ver todas
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4" id="categorias-destacadas-container">
+                                <div class="col-span-full text-center py-4">
+                                    <div class="spinner mx-auto"></div>
+                                    <p class="text-xs sm:text-sm text-gray-500 mt-2">Cargando categorías...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Productos recientes -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 md:p-6">
+                            <h3 class="text-base sm:text-lg font-bold text-[#0d2922] mb-3 sm:mb-4">Tus productos recientes</h3>
+                            <div class="product-grid" id="inicio-productos-grid">
+                                <div class="col-span-full text-center py-6 sm:py-8">
+                                    <div class="spinner"></div>
+                                    <p class="text-xs sm:text-sm text-gray-500 mt-2">Cargando productos...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN MIS PRODUCTOS -->
+                <div class="section-content" id="section-productos" style="display: none;">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                            <div>
+                                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Mis Productos</h2>
+                                <p class="text-xs sm:text-sm text-gray-500">Gestiona tu inventario</p>
+                            </div>
+                            <button onclick="openProductModal()" 
+                                    class="flex items-center gap-2 bg-[#0d2922] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg hover:bg-opacity-90 transition-all text-xs sm:text-sm">
+                                <span class="material-symbols-outlined text-sm sm:text-base">add</span>
+                                Nuevo Producto
+                            </button>
+                        </div>
+
+                        <div class="product-grid" id="productos-grid-container">
+                            <div class="col-span-full text-center py-8 sm:py-12">
+                                <div class="spinner"></div>
+                                <p class="text-xs sm:text-sm text-gray-500 mt-2">Cargando productos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN CATEGORÍAS -->
+                <div class="section-content" id="section-categorias" style="display: none;">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 md:p-8">
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922] mb-4 sm:mb-6">Gestionar Categorías</h2>
+                            
+                            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-6 sm:mb-8">
+                                <input type="text" id="categoryManagerInput" 
+                                       class="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                                       placeholder="Nueva categoría...">
+                                <button onclick="addCategoryFromManager()"
+                                        class="bg-[#f4a4b4] text-[#0d2922] px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 text-sm">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Crear
+                                </button>
+                            </div>
+                            
+                            <h3 class="font-bold text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3">Tus categorías:</h3>
+                            <div id="allCategoriesList" class="flex flex-wrap gap-2 sm:gap-3 p-3 sm:p-4 md:p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 min-h-[150px] sm:min-h-[200px]">
+                                <!-- Se cargarán dinámicamente -->
+                                <div class="text-gray-400 w-full text-center py-4 sm:py-8 text-xs sm:text-sm">No hay categorías creadas. ¡Crea tu primera categoría!</div>
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 mt-3 sm:mt-4">
+                                <span class="material-symbols-outlined text-xs align-middle">info</span>
+                                Las categorías son personales de tu empresa.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN PEDIDOS -->
+                <div class="section-content" id="section-pedidos" style="display: none;">
+                    <div class="max-w-6xl mx-auto">
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922] mb-4 sm:mb-6">Pedidos recibidos</h2>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <div class="min-w-[600px] md:min-w-0">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase">Pedido</th>
+                                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase">Cliente</th>
+                                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase">Fecha</th>
+                                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-right text-xs font-semibold text-gray-500 uppercase">Total</th>
+                                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100" id="pedidos-empresa-table">
+                                            <tr>
+                                                <td colspan="5" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-500">
+                                                    No hay pedidos aún
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Función para toggle sidebar en móvil
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+        
+        // Cerrar sidebar al hacer click en enlaces
+        document.querySelectorAll('.menu-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // ===== CONFIGURACIÓN =====
+        const CONFIG = {
+            API_BASE: '',
+            STORAGE_KEYS: {
+                USER: 'localmarket_user',
+                EMPRESA_CATEGORIES: 'localmarket_categories_'
+            }
+        };
+
+        // ===== UTILIDADES =====
+        const Utils = {
+            formatPrice(price) {
+                return `$${parseFloat(price).toFixed(2)}`;
+            },
+
+            getStorage(key) {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : null;
+            },
+
+            setStorage(key, data) {
+                localStorage.setItem(key, JSON.stringify(data));
+            },
+
+            showToast(message, type = 'success', duration = 3000) {
+                const existingToast = document.querySelector('.toast');
+                if (existingToast) existingToast.remove();
+
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideIn 0.3s reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            },
+
+            async fetchAPI(endpoint, options = {}) {
+                const url = CONFIG.API_BASE + endpoint;
+                const defaultOptions = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
+                
+                try {
+                    const response = await fetch(url, { ...defaultOptions, ...options });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error('API Error:', error);
+                    this.showToast('Error de conexión', 'error');
+                    throw error;
+                }
+            },
+
+            async uploadImage(file) {
+                const formData = new FormData();
+                formData.append('imagen', file);
+                
+                try {
+                    const response = await fetch('/api/upload/producto', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    return data.imagen_url;
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    throw error;
+                }
+            }
+        };
+
+        // ===== AUTENTICACIÓN =====
+        const AuthManager = {
+            getCurrentUser() {
+                return Utils.getStorage(CONFIG.STORAGE_KEYS.USER);
+            },
+
+            logout() {
+                if (confirm('¿Estás seguro de cerrar sesión?')) {
+                    localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+                    Utils.showToast('👋 Sesión cerrada');
+                    setTimeout(() => window.location.href = 'inicio_secion.html', 1000);
+                }
+            }
+        };
+
+        // ===== GESTIÓN DE CATEGORÍAS =====
+        const CategoryManager = {
+            getStorageKey() {
+                const user = AuthManager.getCurrentUser();
+                return `${CONFIG.STORAGE_KEYS.EMPRESA_CATEGORIES}${user?.empresa_id || 'guest'}`;
+            },
+
+            getCategories() {
+                const key = this.getStorageKey();
+                return Utils.getStorage(key) || [];
+            },
+
+            saveCategories(categories) {
+                const key = this.getStorageKey();
+                Utils.setStorage(key, categories);
+                this.renderCategories();
+                this.renderAllCategoriesList();
+                this.renderCategoriasDestacadas();
+                
+                document.getElementById('stats-categorias').textContent = categories.length;
+            },
+
+            addCategory(name) {
+                if (!name || name.trim() === '') {
+                    Utils.showToast('Ingresa un nombre para la categoría', 'error');
+                    return false;
+                }
+                
+                const categories = this.getCategories();
+                
+                if (categories.some(c => c.name.toLowerCase() === name.trim().toLowerCase())) {
+                    Utils.showToast('Esta categoría ya existe', 'error');
+                    return false;
+                }
+                
+                const newCategory = {
+                    id: Date.now() + Math.random().toString(36).substr(2, 5),
+                    name: name.trim()
+                };
+                
+                categories.push(newCategory);
+                this.saveCategories(categories);
+                Utils.showToast('✅ Categoría creada');
+                return true;
+            },
+
+            deleteCategory(categoryId) {
+                if (!confirm('¿Eliminar esta categoría?')) return;
+                
+                let categories = this.getCategories();
+                categories = categories.filter(c => c.id !== categoryId);
+                this.saveCategories(categories);
+                Utils.showToast('Categoría eliminada');
+            },
+
+            renderCategories() {
+                const container = document.getElementById('categoriesContainer');
+                if (!container) return;
+                
+                const categories = this.getCategories();
+                const selectedCategory = document.getElementById('selectedCategory')?.value || '';
+                
+                if (categories.length === 0) {
+                    container.innerHTML = '<div class="text-gray-400 w-full text-center py-2 sm:py-4 text-xs sm:text-sm">No hay categorías. ¡Crea la primera!</div>';
+                    return;
+                }
+                
+                container.innerHTML = categories.map(cat => `
+                    <span class="category-badge ${selectedCategory === cat.id ? 'selected' : ''}" 
+                          onclick="selectCategory('${cat.id}', '${cat.name}')">
+                        ${cat.name}
+                    </span>
+                `).join('');
+            },
+
+            renderAllCategoriesList() {
+                const container = document.getElementById('allCategoriesList');
+                if (!container) return;
+                
+                const categories = this.getCategories();
+                
+                if (categories.length === 0) {
+                    container.innerHTML = '<div class="text-gray-400 w-full text-center py-4 sm:py-8 text-xs sm:text-sm">No hay categorías creadas. ¡Crea tu primera categoría!</div>';
+                    return;
+                }
+                
+                container.innerHTML = categories.map(cat => `
+                    <div class="bg-white border border-gray-200 rounded-lg p-2 sm:p-3 md:p-4 flex items-center justify-between w-full md:w-[calc(50%-6px)]">
+                        <div>
+                            <span class="font-medium text-[#0d2922] text-xs sm:text-sm">${cat.name}</span>
+                        </div>
+                        <button onclick="CategoryManager.deleteCategory('${cat.id}')" 
+                                class="text-red-500 hover:text-red-700 p-1 sm:p-2">
+                            <span class="material-symbols-outlined text-sm sm:text-base">delete</span>
+                        </button>
+                    </div>
+                `).join('');
+            },
+
+            renderCategoriasDestacadas() {
+                const container = document.getElementById('categorias-destacadas-container');
+                if (!container) return;
+                
+                const categories = this.getCategories();
+                const productos = ProductoEmpresaManager.productos || [];
+                
+                if (categories.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-2 sm:py-4">
+                            <p class="text-xs sm:text-sm text-gray-400">No hay categorías</p>
+                            <button onclick="EmpresaPanelManager.loadSection('categorias')" class="mt-1 sm:mt-2 text-xs sm:text-sm text-[#f4a4b4] hover:underline">
+                                Crear categoría
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = categories.slice(0, 4).map(cat => {
+                    const count = productos.filter(p => p.categoria === cat.name).length;
+                    
+                    return `
+                        <div class="category-card">
+                            <span class="material-symbols-outlined category-icon">category</span>
+                            <h4 class="category-name">${cat.name}</h4>
+                            <p class="category-count">${count} producto${count !== 1 ? 's' : ''}</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+        };
+
+        // ===== GESTIÓN DE PRODUCTOS =====
+        const ProductoEmpresaManager = {
+            productos: [],
+
+            async cargarProductos() {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) {
+                    console.log('Usuario sin empresa');
+                    return;
+                }
+
+                try {
+                    const productos = await Utils.fetchAPI(`/api/empresas/${user.empresa_id}/productos`);
+                    this.productos = productos;
+                    
+                    this.renderProductosInicio();
+                    this.renderProductosGrid();
+                    
+                    document.getElementById('stats-productos').textContent = productos.length;
+                    
+                    const categoriasUnicas = [...new Set(productos.map(p => p.categoria))];
+                    document.getElementById('stats-categorias').textContent = categoriasUnicas.length;
+                    
+                    CategoryManager.renderCategoriasDestacadas();
+                    
+                } catch (error) {
+                    console.error('Error cargando productos:', error);
+                    
+                    this.productos = [
+                        {
+                            id: 1,
+                            nombre: 'Audífonos Bluetooth Pro',
+                            categoria: 'Audio',
+                            precio: 899.00,
+                            cantidad_stock: 50,
+                            imagen_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop'
+                        },
+                        {
+                            id: 2,
+                            nombre: 'Teclado Mecánico RGB',
+                            categoria: 'Periféricos',
+                            precio: 1299.00,
+                            cantidad_stock: 30,
+                            imagen_url: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&h=400&fit=crop'
+                        },
+                        {
+                            id: 3,
+                            nombre: 'Mouse Gamer Pro',
+                            categoria: 'Periféricos',
+                            precio: 599.00,
+                            cantidad_stock: 45,
+                            imagen_url: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=400&fit=crop'
+                        }
+                    ];
+                    
+                    this.renderProductosInicio();
+                    this.renderProductosGrid();
+                    
+                    document.getElementById('stats-productos').textContent = this.productos.length;
+                    document.getElementById('stats-categorias').textContent = 2;
+                    
+                    CategoryManager.renderCategoriasDestacadas();
+                }
+            },
+
+            renderProductosInicio() {
+                const grid = document.getElementById('inicio-productos-grid');
+                if (!grid) return;
+                
+                if (this.productos.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full text-center py-4 sm:py-6 md:py-8">
+                            <span class="material-symbols-outlined text-3xl sm:text-4xl text-gray-300 mb-2">inventory</span>
+                            <p class="text-xs sm:text-sm text-gray-500">No tienes productos aún</p>
+                            <button onclick="openProductModal()" class="mt-2 sm:mt-4 bg-[#f4a4b4] text-[#0d2922] px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg font-bold text-xs sm:text-sm">
+                                Agregar primer producto
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const primerosProductos = this.productos.slice(0, 4);
+                
+                grid.innerHTML = primerosProductos.map(p => `
+                    <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('${p.imagen_url || 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&h=400&fit=crop'}');"></div>
+                        <div class="p-2 sm:p-3">
+                            <h4 class="font-bold text-[#0d2922] text-xs sm:text-sm truncate">${p.nombre}</h4>
+                            <p class="text-[10px] sm:text-xs text-gray-500">${p.categoria}</p>
+                            <div class="flex justify-between items-center mt-1 sm:mt-2">
+                                <span class="font-bold text-[#f4a4b4] text-xs sm:text-sm">${Utils.formatPrice(p.precio)}</span>
+                                <span class="text-[10px] sm:text-xs ${p.cantidad_stock > 0 ? 'text-green-600' : 'text-red-600'}">${p.cantidad_stock} uds</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            renderProductosGrid() {
+                const grid = document.getElementById('productos-grid-container');
+                if (!grid) return;
+                
+                if (this.productos.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full text-center py-8 sm:py-12">
+                            <span class="material-symbols-outlined text-4xl sm:text-6xl text-gray-300 mb-2 sm:mb-4">inventory</span>
+                            <p class="text-xs sm:text-sm text-gray-500">No tienes productos aún</p>
+                            <button onclick="openProductModal()" class="mt-2 sm:mt-4 bg-[#f4a4b4] text-[#0d2922] px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg font-bold text-xs sm:text-sm">
+                                Agregar primer producto
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                grid.innerHTML = this.productos.map(p => `
+                    <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('${p.imagen_url || 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&h=400&fit=crop'}');"></div>
+                        <div class="p-2 sm:p-3 md:p-4">
+                            <h3 class="font-bold text-[#0d2922] text-sm sm:text-base md:text-lg mb-1 truncate">${p.nombre}</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">${p.categoria}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-base sm:text-lg md:text-xl font-bold text-[#f4a4b4]">${Utils.formatPrice(p.precio)}</span>
+                                <span class="text-[10px] sm:text-xs ${p.cantidad_stock > 0 ? 'text-green-600' : 'text-red-600'}">Stock: ${p.cantidad_stock}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            async crearProducto(formData) {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) {
+                    Utils.showToast('Error: No tienes una empresa asociada', 'error');
+                    return;
+                }
+
+                try {
+                    const imagenUrl = await Utils.uploadImage(formData.imagenFile);
+                    
+                    const productoData = {
+                        empresa_id: user.empresa_id,
+                        nombre: formData.nombre,
+                        precio: formData.precio,
+                        categoria: formData.categoriaNombre,
+                        imagen_url: imagenUrl,
+                        cantidad_stock: formData.stock
+                    };
+                    
+                    const response = await fetch('/api/productos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productoData)
+                    });
+                    
+                    if (response.ok) {
+                        Utils.showToast('✅ Producto publicado exitosamente');
+                        closeProductModal();
+                        await this.cargarProductos();
+                    } else {
+                        Utils.showToast('Error al publicar producto', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Utils.showToast('Error al publicar producto', 'error');
+                }
+            }
+        };
+
+        // ===== FUNCIONES DEL MODAL =====
+        window.openProductModal = function() {
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.getElementById('productModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            document.getElementById('productForm').reset();
+            document.getElementById('imagePreview').innerHTML = `
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-2xl sm:text-4xl mb-1 sm:mb-2 block">add_photo_alternate</span>
+                    <span class="text-xs sm:text-sm">Haz clic para subir una imagen</span>
+                </div>
+            `;
+            document.getElementById('imagePreview').classList.remove('has-image');
+            
+            CategoryManager.renderCategories();
+        };
+
+        window.closeProductModal = function() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+            document.getElementById('productModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+
+        window.selectCategory = function(categoryId, categoryName) {
+            document.getElementById('selectedCategory').value = categoryId;
+            CategoryManager.renderCategories();
+        };
+
+        window.addNewCategory = function() {
+            const input = document.getElementById('newCategoryInput');
+            if (CategoryManager.addCategory(input.value)) {
+                input.value = '';
+            }
+        };
+
+        window.addCategoryFromManager = function() {
+            const input = document.getElementById('categoryManagerInput');
+            if (CategoryManager.addCategory(input.value)) {
+                input.value = '';
+            }
+        };
+
+        window.previewImage = function(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                const preview = document.getElementById('imagePreview');
+                
+                reader.onload = function(e) {
+                    preview.style.backgroundImage = `url('${e.target.result}')`;
+                    preview.innerHTML = '';
+                    preview.classList.add('has-image');
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        // ===== PANEL DE EMPRESA MANAGER =====
+        const EmpresaPanelManager = {
+            currentSection: 'inicio',
+            
+            init() {
+                this.loadUserData();
+                this.loadSection('inicio');
+                ProductoEmpresaManager.cargarProductos();
+                CategoryManager.renderAllCategoriesList();
+                
+                document.getElementById('productForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const categoryId = document.getElementById('selectedCategory').value;
+                    const category = CategoryManager.getCategories().find(c => c.id === categoryId);
+                    
+                    if (!category) {
+                        Utils.showToast('Selecciona una categoría', 'error');
+                        return;
+                    }
+                    
+                    const imageFile = document.getElementById('productImageFile').files[0];
+                    if (!imageFile) {
+                        Utils.showToast('Selecciona una imagen', 'error');
+                        return;
+                    }
+                    
+                    const formData = {
+                        nombre: document.getElementById('productName').value,
+                        precio: parseFloat(document.getElementById('productPrice').value),
+                        stock: parseInt(document.getElementById('productStock').value),
+                        categoriaNombre: category.name,
+                        imagenFile: imageFile
+                    };
+                    
+                    await ProductoEmpresaManager.crearProducto(formData);
+                });
+            },
+            
+            loadSection(section) {
+                this.currentSection = section;
+                
+                document.querySelectorAll('.menu-btn').forEach(btn => {
+                    btn.classList.remove('active-tab');
+                    if (btn.dataset.section === section) {
+                        btn.classList.add('active-tab');
+                    }
+                });
+                
+                const titles = {
+                    'inicio': 'Inicio',
+                    'productos': 'Mis Productos',
+                    'categorias': 'Gestionar Categorías',
+                    'pedidos': 'Pedidos'
+                };
+                document.getElementById('section-title').textContent = titles[section] || 'Inicio';
+                
+                document.querySelectorAll('.section-content').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.getElementById(`section-${section}`).style.display = 'block';
+                
+                if (section === 'categorias') {
+                    CategoryManager.renderAllCategoriesList();
+                }
+            },
+            
+            loadUserData() {
+                const user = AuthManager.getCurrentUser();
+                if (user) {
+                    document.getElementById('user-name').textContent = user.nombre || 'Usuario Empresa';
+                    document.getElementById('user-email').textContent = user.correo || 'empresa@localmarket.com';
+                    
+                    if (user.empresa_nombre) {
+                        document.getElementById('empresa-nombre-panel').textContent = user.empresa_nombre;
+                    }
+                }
+            }
+        };
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            EmpresaPanelManager.init();
+            
+            // Cerrar sidebar al hacer click fuera
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    const sidebar = document.getElementById('sidebar');
+                    const menuBtn = document.getElementById('mobileMenuButton');
+                    
+                    if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                        document.getElementById('sidebarOverlay').classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        // Hacer funciones globales
+        window.CategoryManager = CategoryManager;
+        window.ProductoEmpresaManager = ProductoEmpresaManager;
+        window.EmpresaPanelManager = EmpresaPanelManager;
+        window.AuthManager = AuthManager;
+        window.Utils = Utils;
+    </script>
+</body>
+</html>
