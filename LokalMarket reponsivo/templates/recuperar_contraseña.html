@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" name="viewport"/>
+<title>LocalMarket - ¿Olvidaste tu contraseña?</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link rel="stylesheet" href="styles.css"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0B2319",
+                        "background-light": "#F8F9FA",
+                        "background-dark": "#05110B",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    screens: {
+                        'xs': '375px',
+                        'sm': '640px',
+                        'md': '768px',
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-custom-dark {
+            background-color: #0B2319;
+        }
+        @media (max-width: 640px) {
+            .recover-container {
+                padding: 1.5rem !important;
+            }
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-custom-dark flex flex-col min-h-screen overflow-x-hidden">
+<header class="pt-6 sm:pt-8 md:pt-10 lg:pt-12 pb-4 sm:pb-6 md:pb-8 flex justify-center items-center">
+<a href="inicio.HTML" class="flex items-center gap-1 sm:gap-2 text-white">
+<span class="material-symbols-outlined text-2xl sm:text-3xl">shopping_bag</span>
+<span class="text-xl sm:text-2xl font-bold tracking-tight">LocalMarket</span>
+</a>
+</header>
+<main class="flex-grow flex items-center justify-center px-3 sm:px-4 pb-6 sm:pb-8 md:pb-12">
+<div class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-2xl p-5 sm:p-6 md:p-8 lg:p-10 recover-container">
+<h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 md:mb-4">
+                ¿Olvidaste tu contraseña?
+            </h1>
+<p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6 md:mb-8 leading-relaxed">
+                No te preocupes, ingresa tu correo para restablecerla.
+            </p>
+<form class="space-y-4 sm:space-y-5 md:space-y-6" method="POST" id="recover-form">
+<div>
+<label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2" for="email">
+                        Correo Electrónico
+                    </label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400 group-focus-within:text-primary dark:group-focus-within:text-gray-300 text-sm sm:text-base">mail</span>
+</div>
+<input class="block w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-3 border border-gray-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-sm" id="email" name="email" placeholder="Correo Electrónico" type="email" required/>
+</div>
+</div>
+<div class="space-y-3 sm:space-y-4 pt-2">
+<button class="w-full bg-primary hover:bg-black text-white font-semibold py-2.5 sm:py-3.5 rounded-lg transition-colors duration-200 shadow-sm text-sm sm:text-base" type="submit">
+                        Enviar Enlace
+                    </button>
+<div class="text-center">
+<a class="text-rose-500 hover:text-rose-600 font-medium transition-colors duration-200 text-xs sm:text-sm" href="inicio_secion.html">
+                            Cancelar
+                        </a>
+</div>
+</div>
+</form>
+</div>
+</main>
+<footer class="bg-custom-dark text-center pb-4 sm:pb-6 md:pb-8 lg:pb-12 pt-4 sm:pt-6 md:pt-8">
+<div class="flex flex-col items-center gap-4 sm:gap-5 md:gap-6">
+<a href="inicio.HTML" class="flex items-center gap-1 sm:gap-2 text-white opacity-90">
+<span class="material-symbols-outlined text-lg sm:text-xl">shopping_bag</span>
+<span class="text-base sm:text-lg font-bold">LocalMarket</span>
+</a>
+<p class="text-gray-400 text-xs sm:text-sm max-w-xs mx-auto px-4">
+                "Un solo lugar, muchas empresas, infinitas posibilidades."
+            </p>
+<div class="flex gap-3 sm:gap-4 footer-links">
+<a class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-700 text-gray-300 hover:text-white hover:border-white transition-all" href="#">
+<span class="material-symbols-outlined text-sm sm:text-base">mail</span>
+</a>
+<a class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-700 text-gray-300 hover:text-white hover:border-white transition-all" href="#">
+<svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
+</a>
+<a class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-700 text-gray-300 hover:text-white hover:border-white transition-all" href="#">
+<svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12 0 2.159.57 4.186 1.564 5.94l-1.663 6.06 6.19-1.623c1.73.93 3.705 1.463 5.803 1.463 6.627 0 12-5.373 12-12s-5.373-12-12-12zm6.39 16.516c-.273.766-1.378 1.417-1.91 1.52-.462.09-1.057.16-3.136-.67-2.657-1.06-4.37-3.765-4.503-3.94-.132-.174-1.08-1.436-1.08-2.742 0-1.306.685-1.947.93-2.214.244-.266.533-.333.71-.333.178 0 .356.002.51.01.16.007.375-.06.587.452.213.51.728 1.777.79 1.907.062.13.104.28.018.452-.086.173-.13.28-.26.43-.13.15-.27.33-.385.45-.13.13-.266.27-.115.53.15.26.666 1.1 1.428 1.777.983.873 1.812 1.144 2.078 1.276.266.13.422.11.578-.07.155-.18.666-.774.843-1.04.178-.266.356-.22.6-.13.244.09 1.554.73 1.82 1.04l.266.13c.155.09.266.13.09.43z"></path></svg>
+</a>
+</div>
+<div class="mt-2 sm:mt-3 md:mt-4">
+<p class="text-gray-500 text-[10px] sm:text-xs">
+                    © 2024 LocalMarket. Todos los derechos reservados.
+                </p>
+</div>
+</div>
+</footer>
+<button class="fixed bottom-3 sm:bottom-4 right-3 sm:right-4 bg-white dark:bg-zinc-800 text-gray-800 dark:text-white p-1.5 sm:p-2 rounded-full shadow-lg hover:scale-110 transition-all" onclick="document.documentElement.classList.toggle('dark')" data-theme-toggle>
+<span class="material-symbols-outlined block dark:hidden text-sm sm:text-base">dark_mode</span>
+<span class="material-symbols-outlined hidden dark:block text-sm sm:text-base">light_mode</span>
+</button>
+<script src="script.js"></script>
+</body></html>
