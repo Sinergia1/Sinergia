@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: localmarket
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: DATABASE_URL
+        value: mysql://3rwEX3bM6GgimVG.root:HxpS7cifPX2bMUJ8@gateway01.us-east-1.prod.aws.tidbcloud.com:4000/IF0_41409995_Local_market
+      - key: MAIL_USERNAME
+        value: localmarket837@gmail.com
+      - key: MAIL_PASSWORD
+        value: ulod idxi bzlm fstc
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USE_TLS
+        value: true
+      - key: APP_URL
+        value: https://tu-app-en-render.onrender.com

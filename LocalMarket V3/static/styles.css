@@ -1,0 +1,510 @@
+/* styles.css - Estilos compartidos para LocalMarket */
+
+:root {
+    --primary: #f4a4b4;
+    --dark-green: #0d2922;
+    --background-light: #f8f6f6;
+    --background-dark: #211114;
+    --mint-green: #e8f5f0;
+    --pale-pink: #fce8ec;
+    --verde-profundo: #0d2922;
+    --accent: #64A489;
+}
+
+.dark {
+    --background-light: #211114;
+    --background-dark: #211114;
+    color-scheme: dark;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+}
+
+/* ===== ESTILOS RESPONSIVOS GLOBALES ===== */
+* {
+    box-sizing: border-box;
+}
+
+img, svg, video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Contenedores responsivos */
+.container-responsive {
+    width: 100%;
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+    .container-responsive {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container-responsive {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+/* Header responsivo */
+.responsive-header {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    .responsive-header {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+}
+
+/* Grids responsivos */
+.responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .responsive-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .responsive-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Tablas responsivas */
+.responsive-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+.responsive-table table {
+    min-width: 600px;
+}
+
+/* Sidebar responsivo */
+@media (max-width: 768px) {
+    .sidebar-mobile {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        z-index: 100;
+        transition: left 0.3s ease;
+    }
+    
+    .sidebar-mobile.open {
+        left: 0;
+    }
+    
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 99;
+    }
+    
+    .sidebar-overlay.open {
+        display: block;
+    }
+}
+
+/* Cards responsivas */
+.responsive-card {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* Texto responsivo */
+h1 {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+}
+
+h2 {
+    font-size: clamp(1.25rem, 4vw, 2rem);
+}
+
+h3 {
+    font-size: clamp(1.125rem, 3vw, 1.5rem);
+}
+
+p {
+    font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+/* Botones responsivos */
+.responsive-button {
+    padding: 0.5rem 1rem;
+    font-size: clamp(0.75rem, 2vw, 0.875rem);
+}
+
+@media (min-width: 768px) {
+    .responsive-button {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Inputs responsivos */
+.responsive-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    .responsive-input {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* Footer responsivo */
+.responsive-footer {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .responsive-footer {
+        padding: 3rem 2.5rem;
+    }
+}
+
+/* ===== ESTILOS EXISTENTES ===== */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.hover-scale {
+    transition: transform 0.2s;
+}
+.hover-scale:hover {
+    transform: scale(1.02);
+}
+
+.loading {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--primary);
+    color: var(--dark-green);
+    font-size: 10px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.3s ease;
+}
+@keyframes popIn {
+    0% { transform: scale(0); }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-width: 300px;
+}
+.toast.success { background-color: #10b981; }
+.toast.error { background-color: #ef4444; }
+.toast.info { background-color: #3b82f6; }
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+[data-filter].active {
+    background-color: var(--mint-green);
+    color: var(--dark-green);
+    font-weight: bold;
+}
+
+[data-product] {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Estilo para placeholder de avatar */
+.avatar-placeholder {
+    background: linear-gradient(135deg, #f4a4b4 0%, #d47e8e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+    .toast {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        text-align: center;
+    }
+}
+
+/* ===== ESTILOS PARA TARJETAS DE PRODUCTOS CON TAMAÑO FIJO ===== */
+
+/* ===== ESTILOS PARA TARJETAS DE PRODUCTOS - TAMAÑO FIJO ===== */
+
+/* Grid de productos - 4 columnas en desktop, 2 en tablet, 1 en móvil */
+.products-grid-fixed {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (min-width: 640px) {
+    .products-grid-fixed {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .products-grid-fixed {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Tarjeta de producto - altura 100% para que todas midan igual */
+.product-card-fixed {
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 380px;
+    max-height: 450px;
+}
+
+.product-card-fixed:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Contenedor de imagen - tamaño fijo 1:1 */
+.product-image-fixed {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #f3f4f6;
+    flex-shrink: 0;
+}
+
+/* Contenido de la tarjeta - ocupa el espacio restante */
+.product-content-fixed {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Nombre de la empresa/marca */
+.product-brand-fixed {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #f4a4b4;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+/* Título del producto - COMPLETO, sin truncar, con break word */
+.product-title-fixed {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #0d2922;
+    margin-bottom: 0.5rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6rem;
+}
+
+/* Precio */
+.product-price-fixed {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #0d2922;
+    margin-bottom: 0.75rem;
+}
+
+/* Botón - siempre al fondo */
+.product-button-fixed {
+    width: 100%;
+    background-color: #0d2922;
+    color: white;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    margin-top: auto;
+    cursor: pointer;
+    border: none;
+}
+
+.product-button-fixed:hover {
+    background-color: #1a4a3a;
+    transform: scale(1.02);
+}
+
+/* Dark mode */
+.dark .product-card-fixed {
+    background: #1e293b;
+}
+
+.dark .product-title-fixed {
+    color: #f1f5f9;
+}
+
+.dark .product-price-fixed {
+    color: #f4a4b4;
+}
+
+/* Responsive móvil */
+@media (max-width: 640px) {
+    .product-card-fixed {
+        min-height: 350px;
+    }
+    
+    .product-title-fixed {
+        font-size: 0.85rem;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+    }
+    
+    .product-price-fixed {
+        font-size: 1rem;
+    }
+    
+    .product-button-fixed {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Responsive para móviles */
+@media (max-width: 640px) {
+    .products-grid-fixed {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .product-title-full {
+        font-size: 0.875rem;
+    }
+    
+    .product-price-fixed {
+        font-size: 1.125rem;
+    }
+}
+
+/* Dark mode */
+.dark .product-card-fixed {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.dark .product-title-full {
+    color: #f1f5f9;
+}
+
+.dark .product-price-fixed {
+    color: #f4a4b4;
+}

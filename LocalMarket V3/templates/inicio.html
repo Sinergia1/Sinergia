@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" name="viewport"/>
+<title>Inicio Marketplace Local</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css">
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#f4a6b5",
+                    "dark-green": "#0d2922",
+                    "mint-green": "#e8f5f0",
+                    "background-light": "#f8f6f6",
+                    "background-dark": "#211114",
+                },
+                fontFamily: {
+                    "display": ["Inter", "sans-serif"]
+                },
+                screens: {
+                    'xs': '375px',
+                    'sm': '640px',
+                    'md': '768px',
+                    'lg': '1024px',
+                    'xl': '1280px',
+                    '2xl': '1536px',
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<style>
+    /* Estilos para el carrusel */
+    .carousel-container {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .carousel-track {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+    
+    .carousel-slide {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+    
+    .carousel-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-button:hover {
+        background: white;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .carousel-button.prev {
+        left: 20px;
+    }
+    
+    .carousel-button.next {
+        right: 20px;
+    }
+    
+    .carousel-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+    
+    .carousel-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-dot.active {
+        background: #f4a6b5;
+        transform: scale(1.2);
+    }
+    
+    @media (max-width: 768px) {
+        .carousel-button {
+            width: 30px;
+            height: 30px;
+        }
+        .carousel-button.prev {
+            left: 10px;
+        }
+        .carousel-button.next {
+            right: 10px;
+        }
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+        }
+    }
+    
+    /* Estilo para el badge del carrito */
+    .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #f4a4b4;
+        color: #0d2922;
+        font-size: 10px;
+        font-weight: bold;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: popIn 0.3s ease;
+    }
+    
+    @keyframes popIn {
+        0% { transform: scale(0); }
+        80% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Toast notifications */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 90%;
+    }
+    .toast.success { background-color: #10b981; }
+    .toast.error { background-color: #ef4444; }
+    .toast.info { background-color: #3b82f6; }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+        .toast {
+            bottom: 10px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+            text-align: center;
+        }
+    }
+    
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    /* Estilo para productos */
+    .product-card {
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    /* Ajustes responsivos para el header */
+    @media (max-width: 768px) {
+        header {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        header .flex-1 {
+            max-width: none !important;
+            margin-left: 0.5rem !important;
+            margin-right: 0.5rem !important;
+        }
+        
+        .carousel-slide > div {
+            padding: 2rem 1rem !important;
+        }
+        
+        .carousel-slide h2 {
+            font-size: 2rem !important;
+        }
+        
+        section.max-w-\[1440px\] {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        aside.w-\[250px\] {
+            width: 100% !important;
+            margin-bottom: 2rem;
+        }
+        
+        section.flex {
+            flex-direction: column !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .carousel-slide h2 {
+            font-size: 1.5rem !important;
+        }
+        
+        .carousel-slide p {
+            font-size: 1rem !important;
+        }
+        
+        .carousel-slide .w-80.h-80 {
+            width: 200px !important;
+            height: 200px !important;
+        }
+    }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-x-hidden">
+<!-- HEADER FIJO RESPONSIVO -->
+<header class="fixed top-0 z-50 w-full h-[70px] bg-dark-green flex items-center justify-between px-4 sm:px-6 md:px-10 shadow-lg">
+<div class="flex items-center gap-2 sm:gap-4 md:gap-8">
+<div class="flex items-center gap-1 sm:gap-2">
+<span class="material-symbols-outlined text-primary text-2xl sm:text-3xl">shopping_bag</span>
+<h1 class="text-white text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap">LocalMarket</h1>
+</div>
+</div>
+<div class="flex flex-1 max-w-xl mx-2 sm:mx-4 md:mx-10">
+<div class="relative w-full flex items-center">
+<div class="absolute left-3 text-slate-400">
+<span class="material-symbols-outlined text-[18px] sm:text-[20px]">search</span>
+</div>
+<input class="w-full h-9 sm:h-10 pl-9 sm:pl-10 pr-10 sm:pr-12 rounded-lg border-none bg-slate-100 focus:ring-2 focus:ring-primary text-xs sm:text-sm" placeholder="Buscar..." type="text" data-search-input/>
+<button class="absolute right-1 top-1/2 -translate-y-1/2 bg-primary text-dark-green p-1 sm:p-1.5 rounded-md hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-xs sm:text-sm">tune</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-2 sm:gap-4">
+<a href="carrito.html" class="text-white hover:text-primary transition-colors flex items-center relative" data-cart-badge>
+<span class="material-symbols-outlined text-xl sm:text-2xl">shopping_cart</span>
+</a>
+<a href="inicio_secion.html" onclick="return goToProfile()" class="text-white hover:text-primary transition-colors flex items-center">
+<span class="material-symbols-outlined text-xl sm:text-2xl">account_circle</span>
+</a>
+</div>
+</div>
+</header>
+<main class="pt-[70px]">
+<!-- HERO BANNER CARRUSEL RESPONSIVO -->
+<section class="carousel-container w-full bg-gradient-to-r from-mint-green to-white relative">
+    <div class="carousel-track">
+        <!-- Slide 1 -->
+        <div class="carousel-slide">
+            <div class="w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-10 lg:px-40 flex flex-col lg:flex-row items-center justify-between">
+                <div class="max-w-xl space-y-4 sm:space-y-6 text-center lg:text-left">
+                    <h2 class="text-dark-green text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">Apoya lo local hoy</h2>
+                    <p class="text-slate-700 text-base sm:text-lg lg:text-xl">Descubre productos únicos cerca de ti.</p>
+                    <a href="tiendas.html" class="inline-block bg-primary text-dark-green px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-bold text-base sm:text-lg hover:shadow-lg transition-all">
+                        Explorar ahora
+                    </a>
+                </div>
+                <div class="mt-8 lg:mt-0 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 bg-contain bg-no-repeat bg-center" style="background-image: url('https://images.unsplash.com/photo-1544816155-12df9643f363?w=400&amp;h=400&amp;fit=crop');"></div>
+            </div>
+        </div>
+        
+        <!-- Slide 2 -->
+        <div class="carousel-slide">
+            <div class="w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-10 lg:px-40 flex flex-col lg:flex-row items-center justify-between">
+                <div class="max-w-xl space-y-4 sm:space-y-6 text-center lg:text-left">
+                    <h2 class="text-dark-green text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">¿Tienes un negocio local?</h2>
+                    <p class="text-slate-700 text-base sm:text-lg lg:text-xl">Vende tus productos en <span class="font-bold text-primary">LocalMarket</span> y llega a cientos de clientes.</p>
+                    <a href="formulario_solicitud.html" class="inline-block bg-dark-green text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-bold text-base sm:text-lg hover:bg-opacity-90 transition-all shadow-lg">
+                        Registrar mi empresa →
+                    </a>
+                </div>
+                <div class="mt-8 lg:mt-0 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 bg-contain bg-no-repeat bg-center" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=400&amp;h=400&amp;fit=crop');"></div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="carousel-button prev" onclick="moveCarousel(-1)">
+        <span class="material-symbols-outlined text-lg sm:text-xl">chevron_left</span>
+    </button>
+    <button class="carousel-button next" onclick="moveCarousel(1)">
+        <span class="material-symbols-outlined text-lg sm:text-xl">chevron_right</span>
+    </button>
+    
+    <div class="carousel-dots">
+        <span class="carousel-dot active" onclick="goToSlide(0)"></span>
+        <span class="carousel-dot" onclick="goToSlide(1)"></span>
+    </div>
+</section>
+
+<!-- SECCIÓN EMPRESAS RESPONSIVA -->
+<section class="max-w-[1440px] mx-auto py-8 sm:py-12 px-4 sm:px-6 md:px-10">
+<div class="flex items-center justify-between mb-6 sm:mb-8">
+<h3 class="text-xl sm:text-2xl font-bold text-dark-green">Empresas</h3>
+<a class="text-primary font-bold hover:underline text-sm sm:text-base" href="tiendas.html">Ver todas las marcas →</a>
+</div>
+<div class="flex overflow-x-auto gap-4 sm:gap-6 md:gap-8 pb-4 no-scrollbar" id="empresas-container">
+<div class="flex justify-center w-full py-8">
+<div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary"></div>
+</div>
+</div>
+</section>
+
+<!-- SECCIÓN PRODUCTOS RESPONSIVA -->
+<section class="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-8 sm:py-12 flex flex-col md:flex-row gap-6 md:gap-10">
+<!-- Sidebar Izquierda con categorías -->
+<aside class="w-full md:w-[250px] shrink-0">
+<h4 class="text-base sm:text-lg font-bold mb-4 sm:mb-6 text-dark-green">Categorías</h4>
+<div class="space-y-1 overflow-x-auto md:overflow-x-visible flex md:flex-col gap-2 md:gap-1 pb-2 md:pb-0" id="categorias-container">
+<div class="flex justify-center py-4 w-full">
+<div class="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-primary"></div>
+</div>
+</div>
+</aside>
+<!-- Grid de Productos Responsivo -->
+<div class="products-grid-fixed" id="productos-container">
+    <div class="col-span-full flex justify-center py-8">
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary"></div>
+    </div>
+</div>
+</section>
+</main>
+
+<!-- FOOTER RESPONSIVO -->
+<footer class="w-full bg-dark-green py-8 sm:py-12 px-4 sm:px-6 md:px-10 flex flex-col items-center justify-center text-center space-y-6 sm:space-y-8 mt-8 sm:mt-12">
+<div class="max-w-2xl flex flex-col items-center gap-3 sm:gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl sm:text-4xl">shopping_bag</span>
+<h2 class="text-white text-xl sm:text-2xl font-black">LocalMarket</h2>
+</div>
+<p class="text-slate-300 text-xs sm:text-sm leading-relaxed px-4">“Un solo lugar, muchas empresas, infinitas posibilidades.”</p>
+<div class="flex items-center gap-4 sm:gap-6">
+<a class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-primary hover:text-verde-profundo transition-all" href="#">
+<span class="material-symbols-outlined text-sm sm:text-base">mail</span>
+</a>
+<a class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-primary hover:text-verde-profundo transition-all" href="#">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+</a>
+<a class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-slate-600 text-white hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all" href="#">
+<svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+</a>
+</div>
+<div class="pt-6 sm:pt-8 border-t border-slate-800 w-full max-w-4xl">
+<p class="text-slate-500 text-xs">© 2024 LocalMarket. Todos los derechos reservados.</p>
+</div>
+</div>
+</footer>
+
+<script>
+// Variables globales
+let currentSlide = 0;
+let allProducts = [];
+let currentCategory = 'todos';
+
+// ===== CONFIGURACIÓN =====
+const CONFIG = {
+    API_BASE: '',
+    STORAGE_KEYS: {
+        USER: 'localmarket_user',
+        SESSION: 'localmarket_session'
+    }
+};
+
+// ===== UTILIDADES =====
+const Utils = {
+    formatPrice(price) {
+        return `MX$ ${parseFloat(price).toFixed(2)}`;
+    },
+
+    getSessionId() {
+        let sessionId = localStorage.getItem(CONFIG.STORAGE_KEYS.SESSION);
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem(CONFIG.STORAGE_KEYS.SESSION, sessionId);
+        }
+        return sessionId;
+    },
+
+    showToast(message, type = 'success', duration = 3000) {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) existingToast.remove();
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideIn 0.3s reverse';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    },
+
+    async fetchAPI(endpoint) {
+        try {
+            const response = await fetch(endpoint);
+            if (!response.ok) return [];
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            return [];
+        }
+    }
+};
+
+// ===== MANEJO DEL CARRITO =====
+const CartManager = {
+    async getCart() {
+        const sessionId = Utils.getSessionId();
+        try {
+            const response = await fetch(`/api/carrito/${sessionId}`);
+            return await response.json();
+        } catch (error) {
+            return [];
+        }
+    },
+
+    async addItem(product) {
+        const sessionId = Utils.getSessionId();
+        
+        try {
+            const response = await fetch('/api/carrito/agregar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    producto_id: product.id,
+                    cantidad: 1
+                })
+            });
+            
+            if (response.ok) {
+                await this.updateCartBadge();
+                Utils.showToast('✅ Producto agregado al carrito');
+                window.dispatchEvent(new Event('cartUpdated'));
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            Utils.showToast('Error al agregar al carrito', 'error');
+            return false;
+        }
+    },
+
+    async updateCartBadge() {
+        const items = await this.getCart();
+        const cartButtons = document.querySelectorAll('[data-cart-badge]');
+        const totalItems = items.reduce((sum, item) => sum + item.cantidad, 0);
+        
+        cartButtons.forEach(btn => {
+            let badge = btn.querySelector('.cart-badge');
+            if (totalItems > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'cart-badge';
+                    btn.style.position = 'relative';
+                    btn.appendChild(badge);
+                }
+                badge.textContent = totalItems > 9 ? '9+' : totalItems;
+            } else if (badge) {
+                badge.remove();
+            }
+        });
+    }
+};
+
+// ===== PRODUCTOS =====
+const ProductManager = {
+    async loadProducts() {
+        try {
+            allProducts = await Utils.fetchAPI('/api/productos');
+            this.renderProducts(allProducts);
+            await CategoryManager.loadCategories();
+        } catch (error) {
+            console.error('Error loading products:', error);
+        }
+    },
+
+    
+    renderProducts(products) {
+    const container = document.getElementById('productos-container');
+    if (!container) return;
+
+    if (!products || products.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-8 sm:py-12">
+                <span class="material-symbols-outlined text-4xl sm:text-6xl text-gray-300 mb-4">inventory</span>
+                <p class="text-gray-500 text-sm sm:text-base">No hay productos disponibles</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = products.map(p => {
+        const productJson = JSON.stringify({
+            id: p.id,
+            name: p.nombre,
+            price: p.precio
+        }).replace(/'/g, "\\'");
+        
+        const imageUrl = p.imagen_url || 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&h=400&fit=crop';
+        const brandName = p.empresa_nombre || 'LocalMarket';
+        const productName = this.escapeHtml(p.nombre);
+        const price = Utils.formatPrice(p.precio);
+        
+        return `
+            <div class="product-card-fixed">
+                <div class="product-image-fixed" style="background-image: url('${imageUrl}');"></div>
+                <div class="product-content-fixed">
+                    <span class="product-brand-fixed">${this.escapeHtml(brandName)}</span>
+                    <h5 class="product-title-fixed">${productName}</h5>
+                    <div class="product-price-fixed">${price}</div>
+                    <button class="product-button-fixed" onclick='CartManager.addItem(${productJson})'>
+                        <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        Agregar
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+},
+
+escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+},
+
+// Añadir esta función de escape HTML si no existe
+escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+},
+
+    filterByCategory(category) {
+        currentCategory = category;
+        
+        if (category === 'todos') {
+            this.renderProducts(allProducts);
+        } else {
+            const filtered = allProducts.filter(p => p.categoria === category);
+            this.renderProducts(filtered);
+        }
+        
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            if (btn.dataset.category === category) {
+                btn.classList.add('bg-mint-green', 'text-dark-green', 'font-bold');
+                btn.classList.remove('hover:bg-slate-100', 'text-slate-600', 'font-medium');
+            } else {
+                btn.classList.remove('bg-mint-green', 'text-dark-green', 'font-bold');
+                btn.classList.add('hover:bg-slate-100', 'text-slate-600', 'font-medium');
+            }
+        });
+    },
+
+    searchProducts(query) {
+        const searchTerm = query.toLowerCase().trim();
+        
+        if (!searchTerm) {
+            this.filterByCategory(currentCategory);
+            return;
+        }
+        
+        const filtered = allProducts.filter(p => 
+            p.nombre.toLowerCase().includes(searchTerm) || 
+            (p.empresa_nombre && p.empresa_nombre.toLowerCase().includes(searchTerm))
+        );
+        
+        this.renderProducts(filtered);
+    }
+};
+
+// ===== CATEGORÍAS =====
+const CategoryManager = {
+    async loadCategories() {
+        try {
+            const response = await fetch('/api/categorias/todas');
+            const categorias = await response.json();
+            this.renderCategories(categorias);
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            this.renderCategories([]);
+        }
+    },
+
+    renderCategories(categorias) {
+        const container = document.getElementById('categorias-container');
+        if (!container) return;
+
+        let html = `
+            <button class="category-btn whitespace-nowrap md:whitespace-normal w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg bg-mint-green text-dark-green font-bold text-xs sm:text-sm" data-category="todos" onclick="ProductManager.filterByCategory('todos')">
+                <span class="material-symbols-outlined text-sm sm:text-[20px]">grid_view</span>
+                <span class="hidden md:inline">Todos (${allProducts.length})</span>
+                <span class="md:hidden">Todos</span>
+            </button>
+        `;
+
+        if (categorias && categorias.length > 0) {
+            categorias.forEach(cat => {
+                const count = allProducts.filter(p => p.categoria === cat).length;
+                if (count > 0) {
+                    html += `
+                        <button class="category-btn whitespace-nowrap md:whitespace-normal w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg hover:bg-slate-100 text-slate-600 font-medium transition-colors text-xs sm:text-sm" data-category="${cat}" onclick="ProductManager.filterByCategory('${cat}')">
+                            <span class="material-symbols-outlined text-sm sm:text-[20px]">category</span>
+                            <span class="hidden md:inline">${cat} (${count})</span>
+                            <span class="md:hidden">${cat}</span>
+                        </button>
+                    `;
+                }
+            });
+        }
+
+        container.innerHTML = html;
+    }
+};
+
+// ===== EMPRESAS =====
+const EmpresaManager = {
+    async loadEmpresas() {
+        try {
+            const empresas = await Utils.fetchAPI('/api/empresas');
+            this.renderEmpresas(empresas);
+        } catch (error) {
+            console.error('Error loading empresas:', error);
+        }
+    },
+
+    renderEmpresas(empresas) {
+        const container = document.getElementById('empresas-container');
+        if (!container) return;
+
+        if (empresas.length === 0) {
+            container.innerHTML = '<p class="text-center w-full text-sm sm:text-base">No hay empresas disponibles</p>';
+            return;
+        }
+
+        container.innerHTML = empresas.map(empresa => `
+            <a href="tiendas.html?store=${encodeURIComponent(empresa.nombre)}" class="flex flex-col items-center gap-1 sm:gap-2 min-w-[70px] sm:min-w-[100px]">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full border-2 border-primary/20 p-1">
+                    <div class="w-full h-full rounded-full bg-cover bg-center" style="background-image: url('${empresa.logo_url || 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop'}');"></div>
+                </div>
+                <span class="text-xs sm:text-sm font-medium text-center truncate w-full">${empresa.nombre}</span>
+            </a>
+        `).join('');
+    }
+};
+
+// ===== CARRUSEL =====
+function moveCarousel(direction) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const track = document.querySelector('.carousel-track');
+    
+    currentSlide += direction;
+    if (currentSlide < 0) currentSlide = slides.length - 1;
+    if (currentSlide >= slides.length) currentSlide = 0;
+    
+    if (track) {
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+    
+    dots.forEach((dot, index) => {
+        if (index === currentSlide) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+}
+
+function goToSlide(index) {
+    currentSlide = index;
+    moveCarousel(0);
+}
+
+// ===== INICIALIZACIÓN =====
+document.addEventListener('DOMContentLoaded', async () => {
+    await ProductManager.loadProducts();
+    await EmpresaManager.loadEmpresas();
+    await CartManager.updateCartBadge();
+
+    const searchInput = document.querySelector('[data-search-input]');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            ProductManager.searchProducts(e.target.value);
+        });
+    }
+
+    setInterval(() => {
+        moveCarousel(1);
+    }, 5000);
+
+    window.addEventListener('cartUpdated', async () => {
+        await CartManager.updateCartBadge();
+    });
+    
+    // Ajustar sidebar en móvil
+    if (window.innerWidth < 768) {
+        const sidebar = document.querySelector('aside');
+        if (sidebar) {
+            sidebar.classList.add('overflow-x-auto');
+        }
+    }
+});
+
+function goToProfile() {
+    const userData = localStorage.getItem('localmarket_user');
+
+    if (userData) {
+        const user = JSON.parse(userData);
+        
+        // Redirección inteligente: detecta el rol antes de navegar
+        if (user.rol === 'administrador') {
+            window.location.href = 'panel_admin.html';
+        } else if (user.rol === 'socio') {
+            window.location.href = 'panel_empresa.html';
+        } else {
+            window.location.href = 'mi_perfil.html';
+        }
+        return false; // Evita que el navegador intente ir a "inicio_secion.html"
+    }
+    return true; // Si no hay usuario, permite ir al login
+}
+
+// Hacer funciones globales
+window.CartManager = CartManager;
+window.ProductManager = ProductManager;
+window.EmpresaManager = EmpresaManager;
+window.CategoryManager = CategoryManager;
+window.Utils = Utils;
+window.moveCarousel = moveCarousel;
+window.goToSlide = goToSlide;
+</script>
+</body>
+</html>

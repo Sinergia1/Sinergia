@@ -1,0 +1,2331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Panel de Empresa - LocalMarket</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDummyKeyNoFuncionaSinClaveReal&libraries=places"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f6f6; overflow-x: hidden; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        
+        .active-tab {
+            background-color: #f4a4b4 !important;
+            color: #0d2922 !important;
+            font-weight: 600 !important;
+        }
+        
+        .menu-btn {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+        
+        .menu-btn:hover:not(.active-tab) {
+            background-color: rgba(244, 164, 180, 0.15);
+            color: #f4a4b4;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-animation {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .logo-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 3px solid #f4a4b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+            background-color: #f0f0f0;
+        }
+        
+        .logo-preview:hover {
+            border-color: #0d2922;
+            transform: scale(1.02);
+        }
+        
+        .logo-preview.has-image {
+            border-color: #10b981;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f4a4b4;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideInToast 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            max-width: 90%;
+        }
+        
+        @media (max-width: 768px) {
+            .toast {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                text-align: center;
+            }
+        }
+        
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.info { background-color: #3b82f6; }
+        
+        @keyframes slideInToast {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 100;
+                transition: left 0.3s ease;
+            }
+            .sidebar-mobile.open { left: 0; }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+            }
+            .sidebar-overlay.open { display: block; }
+            .mobile-menu-button { display: block; }
+            .stats-grid { grid-template-columns: 1fr !important; }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-menu-button { display: none; }
+        }
+        
+        .hidden { display: none !important; }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f4a4b4;
+            color: #0d2922;
+        }
+        
+        .category-badge.selected {
+            background-color: #0d2922 !important;
+            color: white !important;
+        }
+        
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 640px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+        
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px dashed #f4a4b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f4a4b4;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-preview:hover {
+            border-color: #0d2922;
+            color: #0d2922;
+        }
+        
+        .image-preview.has-image {
+            border: 2px solid #10b981;
+        }
+        
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: #f3f4f6;
+            border-radius: 30px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-chip.active {
+            background-color: #f4a4b4;
+            color: #0d2922;
+            font-weight: 600;
+        }
+        
+        .filter-chip:hover:not(.active) {
+            background-color: #e5e7eb;
+        }
+        
+        .category-card-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+        
+        .category-card-item:hover {
+            border-color: #f4a4b4;
+            box-shadow: 0 2px 8px rgba(244,164,180,0.2);
+        }
+        
+        .category-name-display {
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 14px;
+        }
+        
+        .category-count {
+            font-size: 12px;
+            color: #6b7280;
+            margin-left: 8px;
+        }
+        
+        .search-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            border: 1px dashed #e5e7eb;
+        }
+        
+        .sidebar-logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .company-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 3px solid #f4a4b4;
+            margin-bottom: 12px;
+            background-color: #2d4a3e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .company-name-sidebar {
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .company-email-sidebar {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            word-break: break-all;
+        }
+        
+        .day-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .day-card.closed {
+            background: #fef2f2;
+            opacity: 0.7;
+        }
+        
+        .day-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            accent-color: #f4a4b4;
+        }
+        
+        .time-input {
+            padding: 6px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+        }
+        
+        #map {
+            height: 250px;
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .location-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .empresa-tab-content { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Botón agregar producto solo visible en sección productos */
+        .add-product-btn {
+            background-color: #0d2922;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .add-product-btn:hover {
+            background-color: #1a4a3a;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <button id="mobileMenuButton" class="mobile-menu-button fixed bottom-4 right-4 z-50 bg-primary text-dark-green p-3 rounded-full shadow-lg" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity"></div>
+    
+    <!-- MODAL PARA AGREGAR/EDITAR PRODUCTOS -->
+    <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-animation">
+            <div class="bg-gradient-to-r from-[#0d2922] to-[#1a4a3a] text-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl md:text-4xl text-[#f4a4b4]">add_business</span>
+                        <div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold" id="productModalTitle">Agregar producto</h2>
+                            <p class="text-white/80 text-xs sm:text-sm mt-1" id="productModalSubtitle">Completa los datos del producto</p>
+                        </div>
+                    </div>
+                    <button onclick="closeProductModal()" class="text-white/80 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="productForm" class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+                <input type="hidden" id="editProductId">
+                
+                <div>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                        Nombre del producto <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="productName" required
+                           class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none transition-all text-sm"
+                           placeholder="Ej. Jabón artesanal de lavanda">
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                            Precio <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm sm:text-base">$</span>
+                            <input type="number" id="productPrice" step="0.01" min="0" required
+                                   class="w-full pl-7 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                                   placeholder="0.00">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                            Stock <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" id="productStock" min="0" required
+                               class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                               placeholder="0">
+                    </div>
+                </div>
+                
+                <!-- CATEGORÍAS -->
+                <div>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                        Categoría <span class="text-red-500">*</span>
+                    </label>
+                    
+                    <div class="flex gap-2 mb-3 sm:mb-4">
+                        <input type="text" id="newCategoryInput" 
+                               class="flex-1 px-3 sm:px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                               placeholder="Nueva categoría...">
+                        <button type="button" onclick="addNewCategory()"
+                                class="bg-[#f4a4b4] text-[#0d2922] px-4 sm:px-6 py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center gap-1 sm:gap-2 text-sm">
+                            <span class="material-symbols-outlined text-sm">add</span>
+                            Agregar
+                        </button>
+                    </div>
+                    
+                    <div id="categoriesContainer" class="flex flex-wrap gap-2 p-3 sm:p-4 bg-gray-50 rounded-lg min-h-[60px] sm:min-h-[80px] border border-gray-100">
+                        <div class="text-gray-400 w-full text-center py-2 sm:py-4 text-xs sm:text-sm">No hay categorías. ¡Crea la primera!</div>
+                    </div>
+                    
+                    <input type="hidden" id="selectedCategory" required>
+                </div>
+                
+                <div>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                        Imagen <span class="text-red-500">*</span>
+                    </label>
+                    
+                    <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    
+                    <div id="imagePreview" class="image-preview" onclick="document.getElementById('productImageFile').click()">
+                        <div class="text-center">
+                            <span class="material-symbols-outlined text-2xl sm:text-4xl mb-1 sm:mb-2 block">add_photo_alternate</span>
+                            <span class="text-xs sm:text-sm">Haz clic para subir una imagen</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-2">
+                        <span class="material-symbols-outlined text-xs align-middle">info</span>
+                        Formatos: JPG, PNG, GIF. Máx: 5MB
+                    </p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-100">
+                    <button type="submit" id="productSubmitBtn"
+                            class="flex-1 bg-[#0d2922] text-white py-3 sm:py-4 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base">
+                        <span class="material-symbols-outlined">publish</span>
+                        <span id="productSubmitText">Publicar producto</span>
+                    </button>
+                    <button type="button" onclick="closeProductModal()"
+                            class="px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-200 rounded-lg font-bold text-gray-600 hover:bg-gray-50 transition-all text-sm sm:text-base">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
+    <div id="deleteConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-animation">
+            <div class="bg-red-500 text-white px-6 py-4 rounded-t-2xl">
+                <h3 class="text-xl font-bold">Confirmar eliminación</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-700 mb-6">¿Estás seguro de que deseas eliminar este producto?</p>
+                <p class="text-sm text-gray-500 mb-6" id="deleteProductName"></p>
+                <div class="flex gap-3">
+                    <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-500 text-white py-2 rounded-lg font-bold hover:bg-red-600 transition-all">
+                        Sí, eliminar
+                    </button>
+                    <button onclick="closeDeleteModal()" class="flex-1 border border-gray-300 py-2 rounded-lg font-bold hover:bg-gray-50 transition-all">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA EDITAR CATEGORÍA -->
+    <div id="editCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-animation">
+            <div class="bg-gradient-to-r from-[#0d2922] to-[#1a4a3a] text-white px-6 py-4 rounded-t-2xl">
+                <h3 class="text-xl font-bold">Editar categoría</h3>
+                <p class="text-white/70 text-sm mt-1">Cambiar el nombre actualizará todos tus productos</p>
+            </div>
+            <div class="p-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Nombre de la categoría</label>
+                <input type="text" id="editCategoryName" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none">
+                <input type="hidden" id="editCategoryId">
+                <div class="flex gap-3 mt-6">
+                    <button onclick="confirmEditCategory()" class="flex-1 bg-[#0d2922] text-white py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all">
+                        Guardar cambios
+                    </button>
+                    <button onclick="closeEditCategoryModal()" class="flex-1 border border-gray-300 py-2 rounded-lg font-bold hover:bg-gray-50 transition-all">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen">
+        <aside id="sidebar" class="sidebar-mobile md:static md:w-72 bg-[#0d2922] text-white flex flex-col h-full shadow-xl">
+            <div class="sidebar-logo-container">
+                <div id="company-avatar" class="company-avatar" onclick="document.getElementById('empresaLogoFileSidebar').click()">
+                    <span class="material-symbols-outlined text-3xl text-white/50">store</span>
+                </div>
+                <input type="file" id="empresaLogoFileSidebar" accept="image/*" class="hidden" onchange="updateSidebarLogo(this)">
+                <div class="company-name-sidebar" id="company-name-sidebar">Mi Empresa</div>
+                <div class="company-email-sidebar" id="company-email-sidebar">cargando@email.com</div>
+            </div>
+            
+            <nav class="flex-1 px-3 py-4 space-y-1">
+                <button class="menu-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left active-tab text-sm" data-section="inicio" onclick="EmpresaPanelManager.loadSection('inicio')">
+                    <span class="material-symbols-outlined text-xl">dashboard</span>
+                    <span>Inicio</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-sm" data-section="productos" onclick="EmpresaPanelManager.loadSection('productos')">
+                    <span class="material-symbols-outlined text-xl">inventory_2</span>
+                    <span>Productos</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-sm" data-section="categorias" onclick="EmpresaPanelManager.loadSection('categorias')">
+                    <span class="material-symbols-outlined text-xl">category</span>
+                    <span>Mis Categorías</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-sm" data-section="pedidos" onclick="EmpresaPanelManager.loadSection('pedidos')">
+                    <span class="material-symbols-outlined text-xl">shopping_bag</span>
+                    <span>Pedidos</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-sm" data-section="miempresa" onclick="EmpresaPanelManager.loadSection('miempresa')">
+                    <span class="material-symbols-outlined text-xl">business</span>
+                    <span>Mi Empresa</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-sm" data-section="seguridad" onclick="EmpresaPanelManager.loadSection('seguridad')">
+                    <span class="material-symbols-outlined text-xl">lock</span>
+                    <span>Seguridad</span>
+                </button>
+            </nav>
+            
+            <div class="p-4 border-t border-white/10">
+                <button onclick="AuthManager.logout()" class="logout-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all text-sm">
+                    <span class="material-symbols-outlined text-xl">logout</span>
+                    <span>Cerrar sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
+                <h1 class="text-xl font-bold text-[#0d2922]" id="section-title">Inicio</h1>
+                <!-- Botón eliminado del header, ahora solo aparece dentro de la sección de productos -->
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-6" id="mainContent">
+                <!-- SECCIÓN INICIO -->
+                <div class="section-content active" id="section-inicio">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-bold text-[#0d2922]">Bienvenido a tu panel</h2>
+                            <p class="text-sm text-gray-500">Gestiona tus productos y visualiza tus ventas</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="material-symbols-outlined text-3xl text-[#f4a4b4]">inventory_2</span>
+                                    <span class="text-3xl font-bold text-[#0d2922]" id="stats-productos">0</span>
+                                </div>
+                                <h3 class="text-sm text-gray-600 font-medium">Productos activos</h3>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="material-symbols-outlined text-3xl text-[#f4a4b4]">category</span>
+                                    <span class="text-3xl font-bold text-[#0d2922]" id="stats-categorias">0</span>
+                                </div>
+                                <h3 class="text-sm text-gray-600 font-medium">Mis Categorías</h3>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="material-symbols-outlined text-3xl text-[#f4a4b4]">sell</span>
+                                    <span class="text-3xl font-bold text-[#0d2922]" id="stats-ventas">0</span>
+                                </div>
+                                <h3 class="text-sm text-gray-600 font-medium">Ventas totales</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-bold text-[#0d2922] flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[#f4a4b4]">category</span>
+                                    Mis Categorías
+                                </h3>
+                                <button onclick="EmpresaPanelManager.loadSection('categorias')" class="text-sm text-[#f4a4b4] hover:underline font-medium">
+                                    Ver todas
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="categorias-destacadas-container">
+                                <div class="col-span-full text-center py-4">
+                                    <div class="spinner mx-auto"></div>
+                                    <p class="text-sm text-gray-500 mt-2">Cargando categorías...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="text-lg font-bold text-[#0d2922] mb-4">Tus productos recientes</h3>
+                            <div class="product-grid" id="inicio-productos-grid">
+                                <div class="col-span-full text-center py-8">
+                                    <div class="spinner"></div>
+                                    <p class="text-sm text-gray-500 mt-2">Cargando productos...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN MIS PRODUCTOS -->
+                <div class="section-content" id="section-productos" style="display: none;">
+                    <div class="max-w-7xl mx-auto">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 class="text-2xl font-bold text-[#0d2922]">Mis Productos</h2>
+                                <p class="text-sm text-gray-500">Gestiona tu inventario</p>
+                            </div>
+                            <button onclick="openProductModal()" class="add-product-btn">
+                                <span class="material-symbols-outlined">add</span>
+                                Nuevo Producto
+                            </button>
+                        </div>
+
+                        <div class="search-filter-bar">
+                            <div class="flex-1">
+                                <input type="text" id="searchProductInput" 
+                                       class="search-input w-full"
+                                       placeholder="🔍 Buscar productos por nombre..."
+                                       onkeyup="ProductManager.filterProducts()">
+                            </div>
+                            <div class="filter-group" id="categoryFiltersContainer">
+                                <span class="filter-chip active" data-filter="todos" onclick="ProductManager.filterByCategory('todos')">Todos</span>
+                            </div>
+                        </div>
+
+                        <div class="product-grid" id="productos-grid-container">
+                            <div class="col-span-full text-center py-12">
+                                <div class="spinner"></div>
+                                <p class="text-sm text-gray-500 mt-2">Cargando productos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN MIS CATEGORÍAS -->
+                <div class="section-content" id="section-categorias" style="display: none;">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-[#0d2922]">Mis Categorías</h2>
+                                    <p class="text-sm text-gray-500">Categorías que has creado para tus productos</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3 mb-8">
+                                <input type="text" id="categoryManagerInput" 
+                                       class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                                       placeholder="Nueva categoría...">
+                                <button onclick="addCategoryFromManager()"
+                                        class="bg-[#f4a4b4] text-[#0d2922] px-6 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center gap-2">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Crear
+                                </button>
+                            </div>
+                            
+                            <h3 class="font-bold text-sm text-gray-700 mb-3">Tus categorías:</h3>
+                            <div id="allCategoriesList" class="flex flex-wrap gap-3 p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 min-h-[200px]">
+                                <div class="text-gray-400 w-full text-center py-8 text-sm">Cargando categorías...</div>
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 mt-4">
+                                <span class="material-symbols-outlined text-xs align-middle">info</span>
+                                Las categorías se guardan localmente en tu navegador y son personales de tu empresa.
+                                Cuando editas o eliminas una categoría, TODOS tus productos se actualizan automáticamente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN PEDIDOS -->
+                <div class="section-content" id="section-pedidos" style="display: none;">
+                    <div class="max-w-6xl mx-auto">
+                        <h2 class="text-2xl font-bold text-[#0d2922] mb-6">Pedidos recibidos</h2>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <div class="min-w-[600px]">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Pedido</th>
+                                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Cliente</th>
+                                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Fecha</th>
+                                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase">Total</th>
+                                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100" id="pedidos-empresa-table">
+                                            <tr>
+                                                <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+                                                    No hay pedidos aún
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN MI EMPRESA -->
+                <div class="section-content" id="section-miempresa" style="display: none;">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                            <div class="border-b border-gray-200 px-6 pt-6">
+                                <div class="flex gap-6">
+                                    <button class="empresa-tab-btn pb-3 text-sm font-semibold text-[#f4a4b4] border-b-2 border-[#f4a4b4]" data-tab="info" onclick="switchEmpresaTab('info')">
+                                        Información de la empresa
+                                    </button>
+                                    <button class="empresa-tab-btn pb-3 text-sm font-semibold text-gray-500 hover:text-gray-700" data-tab="horario" onclick="switchEmpresaTab('horario')">
+                                        Horario de atención
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6">
+                                <!-- TAB 1: Información de la empresa -->
+                                <div id="tab-info" class="empresa-tab-content">
+                                    <form id="empresaForm" class="space-y-6">
+                                        <div class="flex flex-col items-center mb-6">
+                                            <label class="block text-sm font-semibold text-gray-700 mb-3">Logo de la empresa</label>
+                                            <input type="file" id="empresaLogoFile" accept="image/*" class="hidden" onchange="previewEmpresaLogo(this)">
+                                            <div id="empresaLogoPreview" class="logo-preview" onclick="document.getElementById('empresaLogoFile').click()">
+                                                <div class="text-center">
+                                                    <span class="material-symbols-outlined text-3xl">add_photo_alternate</span>
+                                                    <span class="text-xs block mt-1">Subir logo</span>
+                                                </div>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2">Haz clic en el círculo para cambiar el logo</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Nombre de la empresa <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" id="empresaNombre" required
+                                                   class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Correo electrónico <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="email" id="empresaCorreo" required
+                                                   class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none">
+                                            <p class="text-xs text-gray-500 mt-1">⚠️ Este correo se usará para iniciar sesión</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Teléfono de contacto <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="tel" id="empresaTelefono" required
+                                                   class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none"
+                                                   placeholder="+52 123 456 7890">
+                                            <p class="text-xs text-gray-500 mt-1">Este número se usará para que los clientes te contacten</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Dirección / Ubicación <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" id="location-input" class="location-input" placeholder="Escribe tu dirección...">
+                                            <div id="map"></div>
+                                            <input type="hidden" id="empresaDireccion">
+                                            <input type="hidden" id="empresaLatitud">
+                                            <input type="hidden" id="empresaLongitud">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Tipo de producto
+                                            </label>
+                                            <select id="empresaTipoProducto" class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none">
+                                                <option value="alimentos">Alimentos</option>
+                                                <option value="ropa">Ropa y Accesorios</option>
+                                                <option value="tecnologia">Tecnología</option>
+                                                <option value="farmacia">Farmacia</option>
+                                                <option value="servicios">Servicios</option>
+                                                <option value="artesanias">Artesanías</option>
+                                                <option value="hogar">Hogar y Decoración</option>
+                                                <option value="belleza">Belleza y Cuidado Personal</option>
+                                                <option value="mascotas">Mascotas</option>
+                                                <option value="otro">Otro</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="pt-4 border-t border-gray-100">
+                                            <button type="submit"
+                                                    class="w-full bg-[#0d2922] text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg">
+                                                <span class="material-symbols-outlined">save</span>
+                                                Guardar cambios de la empresa
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                                <!-- TAB 2: Horario de atención -->
+                                <div id="tab-horario" class="empresa-tab-content" style="display: none;">
+                                    <div class="space-y-4">
+                                        <p class="text-sm text-gray-500 mb-4">Selecciona los días que atiendes y el horario correspondiente.</p>
+                                        
+                                        <div class="day-card p-4 rounded-xl border border-gray-100" id="day-monday-card">
+                                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="checkbox" id="monday-active" class="day-checkbox" onchange="toggleDaySchedule('monday')">
+                                                    <label for="monday-active" class="font-semibold text-gray-700 w-24">Lunes</label>
+                                                </div>
+                                                <div id="monday-hours" class="flex items-center gap-3">
+                                                    <input type="time" id="monday-start" class="time-input" value="09:00" disabled>
+                                                    <span>a</span>
+                                                    <input type="time" id="monday-end" class="time-input" value="18:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="day-card p-4 rounded-xl border border-gray-100" id="day-tuesday-card">
+                                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="checkbox" id="tuesday-active" class="day-checkbox" onchange="toggleDaySchedule('tuesday')">
+                                                    <label for="tuesday-active" class="font-semibold text-gray-700 w-24">Martes</label>
+                                                </div>
+                                                <div id="tuesday-hours" class="flex items-center gap-3">
+                                                    <input type="time" id="tuesday-start" class="time-input" value="09:00" disabled>
+                                                    <span>a</span>
+                                                    <input type="time" id="tuesday-end" class="time-input" value="18:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="day-card p-4 rounded-xl border border-gray-100" id="day-wednesday-card">
+                                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="checkbox" id="wednesday-active" class="day-checkbox" onchange="toggleDaySchedule('wednesday')">
+                                                    <label for="wednesday-active" class="font-semibold text-gray-700 w-24">Miércoles</label>
+                                                </div>
+                                                <div id="wednesday-hours" class="flex items-center gap-3">
+                                                    <input type="time" id="wednesday-start" class="time-input" value="09:00" disabled>
+                                                    <span>a</span>
+                                                    <input type="time" id="wednesday-end" class="time-input" value="18:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="day-card p-4 rounded-xl border border-gray-100" id="day-thursday-card">
+                                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="checkbox" id="thursday-active" class="day-checkbox" onchange="toggleDaySchedule('thursday')">
+                                                    <label for="thursday-active" class="font-semibold text-gray-700 w-24">Jueves</label>
+                                                </div>
+                                                <div id="thursday-hours" class="flex items-center gap-3">
+                                                    <input type="time" id="thursday-start" class="time-input" value="09:00" disabled>
+                                                    <span>a</span>
+                                                    <input type="time" id="thursday-end" class="time-input" value="18:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="day-card p-4 rounded-xl border border-gray-100" id="day-friday-card">
+                                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="checkbox" id="friday-active" class="day-checkbox" onchange="toggleDaySchedule('friday')">
+                                                    <label for="friday-active" class="font-semibold text-gray-700 w-24">Viernes</label>
+                                                </div>
+                                                <div id="friday-hours" class="flex items-center gap-3">
+                                                    <input type="time" id="friday-start" class="time-input" value="09:00" disabled>
+                                                    <span>a</span>
+                                                    <input type="time" id="friday-end" class="time-input" value="18:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="day-card p-4 rounded-xl border border-gray-100" id="day-saturday-card">
+                                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="checkbox" id="saturday-active" class="day-checkbox" onchange="toggleDaySchedule('saturday')">
+                                                    <label for="saturday-active" class="font-semibold text-gray-700 w-24">Sábado</label>
+                                                </div>
+                                                <div id="saturday-hours" class="flex items-center gap-3">
+                                                    <input type="time" id="saturday-start" class="time-input" value="09:00" disabled>
+                                                    <span>a</span>
+                                                    <input type="time" id="saturday-end" class="time-input" value="14:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="day-card p-4 rounded-xl border border-gray-100" id="day-sunday-card">
+                                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="checkbox" id="sunday-active" class="day-checkbox" onchange="toggleDaySchedule('sunday')">
+                                                    <label for="sunday-active" class="font-semibold text-gray-700 w-24">Domingo</label>
+                                                </div>
+                                                <div id="sunday-hours" class="flex items-center gap-3">
+                                                    <input type="time" id="sunday-start" class="time-input" value="09:00" disabled>
+                                                    <span>a</span>
+                                                    <input type="time" id="sunday-end" class="time-input" value="14:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="pt-6 border-t border-gray-100">
+                                            <button id="saveHorarioBtn"
+                                                    class="w-full bg-[#0d2922] text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg">
+                                                <span class="material-symbols-outlined">schedule</span>
+                                                Guardar horario
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN SEGURIDAD -->
+                <div class="section-content" id="section-seguridad" style="display: none;">
+                    <div class="max-w-2xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                            <div class="flex items-center gap-3 mb-8">
+                                <span class="material-symbols-outlined text-4xl text-[#f4a4b4]">lock</span>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-[#0d2922]">Cambiar contraseña</h2>
+                                    <p class="text-sm text-gray-500">Actualiza tu contraseña de acceso</p>
+                                </div>
+                            </div>
+                            
+                            <form id="passwordChangeForm" class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Contraseña actual
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="material-symbols-outlined text-gray-400">lock</span>
+                                        </div>
+                                        <input type="password" id="currentPassword" required
+                                               class="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none"
+                                               placeholder="Ingresa tu contraseña actual">
+                                        <button type="button" onclick="togglePasswordVisibility('currentPassword', this)" 
+                                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#f4a4b4] transition-colors">
+                                            <span class="material-symbols-outlined">visibility</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Nueva contraseña
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="material-symbols-outlined text-gray-400">lock</span>
+                                        </div>
+                                        <input type="password" id="newPassword" required minlength="6"
+                                               class="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none"
+                                               placeholder="Mínimo 6 caracteres">
+                                        <button type="button" onclick="togglePasswordVisibility('newPassword', this)" 
+                                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#f4a4b4] transition-colors">
+                                            <span class="material-symbols-outlined">visibility</span>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">La contraseña debe tener al menos 6 caracteres</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Confirmar nueva contraseña
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="material-symbols-outlined text-gray-400">lock</span>
+                                        </div>
+                                        <input type="password" id="confirmNewPassword" required minlength="6"
+                                               class="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none"
+                                               placeholder="Repite la nueva contraseña">
+                                        <button type="button" onclick="togglePasswordVisibility('confirmNewPassword', this)" 
+                                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#f4a4b4] transition-colors">
+                                            <span class="material-symbols-outlined">visibility</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-4 border-t border-gray-100">
+                                    <button type="submit" id="changePasswordBtn"
+                                            class="w-full bg-[#0d2922] text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg">
+                                        <span class="material-symbols-outlined">save</span>
+                                        Guardar nueva contraseña
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ===== FUNCIONES AUXILIARES =====
+        let currentDeleteProductId = null;
+        let currentEditCategoryId = null;
+        let currentEditCategoryName = null;
+        let autocomplete;
+        let map;
+        let marker;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('.material-symbols-outlined');
+            if (input.type === 'password') { 
+                input.type = 'text'; 
+                icon.textContent = 'visibility_off'; 
+            } else { 
+                input.type = 'password'; 
+                icon.textContent = 'visibility'; 
+            }
+        }
+
+        function toggleDaySchedule(day) {
+            const checkbox = document.getElementById(`${day}-active`);
+            const startInput = document.getElementById(`${day}-start`);
+            const endInput = document.getElementById(`${day}-end`);
+            const card = document.getElementById(`day-${day}-card`);
+            
+            if (checkbox.checked) {
+                startInput.disabled = false;
+                endInput.disabled = false;
+                card.classList.remove('closed');
+            } else {
+                startInput.disabled = true;
+                endInput.disabled = true;
+                card.classList.add('closed');
+            }
+        }
+
+        function getHorarioFromForm() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const horario = {};
+            const dayNames = {
+                monday: 'lunes', tuesday: 'martes', wednesday: 'miércoles', 
+                thursday: 'jueves', friday: 'viernes', saturday: 'sábado', sunday: 'domingo'
+            };
+            
+            days.forEach(day => {
+                const isActive = document.getElementById(`${day}-active`).checked;
+                if (isActive) {
+                    const start = document.getElementById(`${day}-start`).value;
+                    const end = document.getElementById(`${day}-end`).value;
+                    horario[dayNames[day]] = `${start} - ${end}`;
+                } else {
+                    horario[dayNames[day]] = 'Cerrado';
+                }
+            });
+            return horario;
+        }
+
+        function setHorarioToForm(horario) {
+            const dayMap = {
+                lunes: 'monday', martes: 'tuesday', miércoles: 'wednesday',
+                jueves: 'thursday', viernes: 'friday', sábado: 'saturday', domingo: 'sunday'
+            };
+            
+            for (const [dayName, dayId] of Object.entries(dayMap)) {
+                const schedule = horario[dayName];
+                if (schedule && schedule !== 'Cerrado') {
+                    document.getElementById(`${dayId}-active`).checked = true;
+                    const [start, end] = schedule.split(' - ');
+                    if (start) document.getElementById(`${dayId}-start`).value = start;
+                    if (end) document.getElementById(`${dayId}-end`).value = end;
+                    toggleDaySchedule(dayId);
+                } else {
+                    document.getElementById(`${dayId}-active`).checked = false;
+                    toggleDaySchedule(dayId);
+                }
+            }
+        }
+
+        function initMapAutocomplete() {
+            const input = document.getElementById('location-input');
+            if (!input || typeof google === 'undefined') return;
+            
+            autocomplete = new google.maps.places.Autocomplete(input, {
+                types: ['address'],
+                componentRestrictions: { country: 'mx' }
+            });
+            
+            autocomplete.addListener('place_changed', onPlaceChanged);
+            
+            const mapOptions = {
+                center: { lat: 19.4326, lng: -99.1332 },
+                zoom: 13,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            
+            map = new google.maps.Map(document.getElementById('map'), mapOptions);
+            marker = new google.maps.Marker({
+                map: map,
+                draggable: true,
+                animation: google.maps.Animation.DROP
+            });
+            
+            marker.addListener('dragend', (event) => {
+                const lat = event.latLng.lat();
+                const lng = event.latLng.lng();
+                document.getElementById('empresaLatitud').value = lat;
+                document.getElementById('empresaLongitud').value = lng;
+                
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ location: { lat: lat, lng: lng } }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        document.getElementById('location-input').value = results[0].formatted_address;
+                        document.getElementById('empresaDireccion').value = results[0].formatted_address;
+                    }
+                });
+            });
+        }
+
+        function onPlaceChanged() {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) {
+                Utils.showToast('Selecciona una dirección de la lista', 'error');
+                return;
+            }
+            
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            
+            document.getElementById('empresaLatitud').value = lat;
+            document.getElementById('empresaLongitud').value = lng;
+            document.getElementById('empresaDireccion').value = place.formatted_address;
+            
+            map.setCenter(place.geometry.location);
+            map.setZoom(15);
+            marker.setPosition(place.geometry.location);
+        }
+
+        function setLocationFromData(lat, lng, address) {
+            if (lat && lng && map) {
+                const location = new google.maps.LatLng(lat, lng);
+                map.setCenter(location);
+                map.setZoom(15);
+                marker.setPosition(location);
+                document.getElementById('empresaLatitud').value = lat;
+                document.getElementById('empresaLongitud').value = lng;
+            }
+            if (address) {
+                document.getElementById('location-input').value = address;
+                document.getElementById('empresaDireccion').value = address;
+            }
+        }
+
+        function switchEmpresaTab(tabName) {
+            document.querySelectorAll('.empresa-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            
+            document.querySelectorAll('.empresa-tab-btn').forEach(btn => {
+                btn.classList.remove('text-[#f4a4b4]', 'border-b-2', 'border-[#f4a4b4]');
+                btn.classList.add('text-gray-500');
+            });
+            const activeBtn = document.querySelector(`.empresa-tab-btn[data-tab="${tabName}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('text-[#f4a4b4]', 'border-b-2', 'border-[#f4a4b4]');
+                activeBtn.classList.remove('text-gray-500');
+            }
+            
+            if (tabName === 'info') {
+                setTimeout(() => {
+                    if (map) google.maps.event.trigger(map, 'resize');
+                }, 100);
+            }
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                const preview = document.getElementById('imagePreview');
+                reader.onload = function(e) { 
+                    preview.style.backgroundImage = `url('${e.target.result}')`; 
+                    preview.innerHTML = ''; 
+                    preview.classList.add('has-image'); 
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewEmpresaLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                const preview = document.getElementById('empresaLogoPreview');
+                reader.onload = function(e) { 
+                    preview.style.backgroundImage = `url('${e.target.result}')`; 
+                    preview.innerHTML = ''; 
+                    preview.classList.add('has-image'); 
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateSidebarLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                const avatar = document.getElementById('company-avatar');
+                reader.onload = function(e) {
+                    avatar.style.backgroundImage = `url('${e.target.result}')`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.innerHTML = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function openProductModal(product = null) {
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.getElementById('productModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            if (product) {
+                document.getElementById('productModalTitle').textContent = 'Editar producto';
+                document.getElementById('productModalSubtitle').textContent = 'Modifica los datos del producto';
+                document.getElementById('productSubmitText').textContent = 'Actualizar producto';
+                document.getElementById('editProductId').value = product.id;
+                document.getElementById('productName').value = product.nombre;
+                document.getElementById('productPrice').value = product.precio;
+                document.getElementById('productStock').value = product.cantidad_stock;
+                
+                if (product.imagen_url) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.style.backgroundImage = `url('${product.imagen_url}')`;
+                    preview.innerHTML = '';
+                    preview.classList.add('has-image');
+                }
+                
+                if (product.categoria) {
+                    document.getElementById('selectedCategory').value = product.categoria;
+                }
+                CategoryManager.renderCategoriesInModal();
+            } else {
+                document.getElementById('productModalTitle').textContent = 'Agregar producto';
+                document.getElementById('productModalSubtitle').textContent = 'Completa los datos del producto';
+                document.getElementById('productSubmitText').textContent = 'Publicar producto';
+                document.getElementById('productForm').reset();
+                document.getElementById('editProductId').value = '';
+                document.getElementById('selectedCategory').value = '';
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = '<div class="text-center"><span class="material-symbols-outlined text-2xl sm:text-4xl mb-1 sm:mb-2 block">add_photo_alternate</span><span class="text-xs sm:text-sm">Haz clic para subir una imagen</span></div>';
+                preview.classList.remove('has-image');
+                CategoryManager.renderCategoriesInModal();
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+            document.getElementById('productModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function openDeleteModal(productId, productName) {
+            currentDeleteProductId = productId;
+            document.getElementById('deleteProductName').textContent = `"${productName}"`;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            currentDeleteProductId = null;
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            document.getElementById('modalOverlay').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function confirmDeleteProduct() {
+            if (!currentDeleteProductId) return;
+            await ProductManager.deleteProduct(currentDeleteProductId);
+            closeDeleteModal();
+        }
+
+        function selectCategory(categoryName, categoryId = null) {
+            document.getElementById('selectedCategory').value = categoryName;
+            CategoryManager.renderCategoriesInModal();
+        }
+
+        // ===== GESTIÓN DE CATEGORÍAS CON LOCALSTORAGE =====
+        const CategoryManager = {
+            getStorageKey() {
+                const user = AuthManager.getCurrentUser();
+                return `localmarket_categories_${user?.empresa_id || 'guest'}`;
+            },
+
+            getCategories() {
+                const key = this.getStorageKey();
+                let categories = Utils.getStorage(key) || [];
+                
+                const productos = ProductManager.productos || [];
+                const productCategories = [...new Set(
+                    productos
+                        .filter(p => p.categoria && p.categoria.trim() !== '')
+                        .map(p => p.categoria)
+                )];
+                
+                let needsUpdate = false;
+                const updatedCategories = [...categories];
+                
+                productCategories.forEach(catName => {
+                    const exists = updatedCategories.some(c => c.name === catName);
+                    if (!exists) {
+                        updatedCategories.push({
+                            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                            name: catName
+                        });
+                        needsUpdate = true;
+                    }
+                });
+                
+                if (needsUpdate) {
+                    Utils.setStorage(key, updatedCategories);
+                    return updatedCategories;
+                }
+                
+                return categories;
+            },
+
+            saveCategories(categories) {
+                const key = this.getStorageKey();
+                Utils.setStorage(key, categories);
+                this.refreshAll();
+            },
+
+            addCategory(name) {
+                if (!name || name.trim() === '') {
+                    Utils.showToast('Ingresa un nombre para la categoría', 'error');
+                    return false;
+                }
+                
+                const categories = this.getCategories();
+                
+                if (categories.some(c => c.name.toLowerCase() === name.trim().toLowerCase())) {
+                    Utils.showToast('Esta categoría ya existe', 'error');
+                    return false;
+                }
+                
+                const newCategory = {
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    name: name.trim()
+                };
+                
+                categories.push(newCategory);
+                this.saveCategories(categories);
+                Utils.showToast('✅ Categoría creada');
+                return true;
+            },
+
+            async updateCategory(categoryId, newName) {
+                let categories = this.getCategories();
+                const categoryIndex = categories.findIndex(c => c.id === categoryId);
+                
+                if (categoryIndex === -1) {
+                    Utils.showToast('Categoría no encontrada', 'error');
+                    return false;
+                }
+                
+                const oldName = categories[categoryIndex].name;
+                
+                if (categories.some(c => c.id !== categoryId && c.name.toLowerCase() === newName.toLowerCase())) {
+                    Utils.showToast('Ya existe una categoría con ese nombre', 'error');
+                    return false;
+                }
+                
+                const productos = ProductManager.productos || [];
+                let productosActualizados = 0;
+                
+                for (const producto of productos) {
+                    if (producto.categoria === oldName) {
+                        producto.categoria = newName;
+                        await this.updateProductCategoria(producto.id, newName);
+                        productosActualizados++;
+                    }
+                }
+                
+                categories[categoryIndex].name = newName;
+                this.saveCategories(categories);
+                
+                Utils.showToast(`✅ Categoría actualizada en ${productosActualizados} producto(s)`);
+                return true;
+            },
+
+            async deleteCategory(categoryId) {
+                const categories = this.getCategories();
+                const category = categories.find(c => c.id === categoryId);
+                
+                if (!category) {
+                    Utils.showToast('Categoría no encontrada', 'error');
+                    return;
+                }
+                
+                const productosConCategoria = (ProductManager.productos || []).filter(p => p.categoria === category.name).length;
+                
+                if (!confirm(`¿Eliminar la categoría "${category.name}"?\n\n${productosConCategoria} producto(s) quedarán sin categoría.\n\n¿Continuar?`)) return;
+                
+                const productos = ProductManager.productos || [];
+                
+                for (const producto of productos) {
+                    if (producto.categoria === category.name) {
+                        await this.removeProductCategoria(producto.id);
+                    }
+                }
+                
+                const newCategories = categories.filter(c => c.id !== categoryId);
+                this.saveCategories(newCategories);
+                
+                Utils.showToast(`🗑️ Categoría eliminada de ${productosConCategoria} producto(s)`);
+            },
+
+            async updateProductCategoria(productId, newCategoria) {
+                try {
+                    const producto = ProductManager.productos.find(p => p.id === productId);
+                    if (!producto) return;
+                    
+                    const productoData = {
+                        nombre: producto.nombre,
+                        precio: producto.precio,
+                        categoria: newCategoria,
+                        imagen_url: producto.imagen_url,
+                        cantidad_stock: producto.cantidad_stock
+                    };
+                    
+                    await fetch(`/api/productos/${productId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productoData)
+                    });
+                    
+                    console.log(`✅ Producto ${productId} actualizado a categoría: ${newCategoria}`);
+                } catch (error) {
+                    console.error('Error actualizando categoría del producto:', error);
+                }
+            },
+
+            async removeProductCategoria(productId) {
+                try {
+                    const producto = ProductManager.productos.find(p => p.id === productId);
+                    if (!producto) return;
+                    
+                    const productoData = {
+                        nombre: producto.nombre,
+                        precio: producto.precio,
+                        categoria: '',
+                        imagen_url: producto.imagen_url,
+                        cantidad_stock: producto.cantidad_stock
+                    };
+                    
+                    await fetch(`/api/productos/${productId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productoData)
+                    });
+                    
+                    producto.categoria = '';
+                    console.log(`✅ Categoría removida del producto ${productId}`);
+                } catch (error) {
+                    console.error('Error removiendo categoría del producto:', error);
+                }
+            },
+
+            refreshAll() {
+                this.renderCategoriesInModal();
+                this.renderAllCategoriesList();
+                this.renderCategoriasDestacadas();
+                this.renderCategoryFilters();
+                
+                const statsCategorias = document.getElementById('stats-categorias');
+                if (statsCategorias) {
+                    statsCategorias.textContent = this.getCategories().length;
+                }
+            },
+
+            renderCategoriesInModal() {
+                const container = document.getElementById('categoriesContainer');
+                if (!container) return;
+                
+                const categories = this.getCategories();
+                const selectedCategory = document.getElementById('selectedCategory')?.value || '';
+                
+                if (categories.length === 0) {
+                    container.innerHTML = '<div class="text-gray-400 w-full text-center py-2 sm:py-4 text-xs sm:text-sm">No hay categorías. ¡Crea la primera!</div>';
+                    return;
+                }
+                
+                container.innerHTML = categories.map(cat => `
+                    <span class="category-badge ${selectedCategory === cat.name ? 'selected' : ''}" 
+                          onclick="selectCategory('${escapeHtml(cat.name).replace(/'/g, "\\'")}', '${cat.id}')">
+                        ${escapeHtml(cat.name)}
+                    </span>
+                `).join('');
+            },
+
+            renderAllCategoriesList() {
+                const container = document.getElementById('allCategoriesList');
+                if (!container) return;
+                
+                const categories = this.getCategories();
+                const productos = ProductManager.productos || [];
+                
+                if (categories.length === 0) {
+                    container.innerHTML = '<div class="text-gray-400 w-full text-center py-8 text-sm">No hay categorías creadas. ¡Crea tu primera categoría!</div>';
+                    return;
+                }
+                
+                const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
+                
+                container.innerHTML = sortedCategories.map(cat => {
+                    const count = productos.filter(p => p.categoria === cat.name).length;
+                    return `
+                        <div class="category-card-item w-full md:w-[calc(50%-6px)]">
+                            <div>
+                                <span class="category-name-display">${escapeHtml(cat.name)}</span>
+                                <span class="category-count">(${count} producto${count !== 1 ? 's' : ''})</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="openEditCategoryModal('${cat.id}', '${escapeHtml(cat.name).replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                    <span class="material-symbols-outlined text-sm">edit</span>
+                                </button>
+                                <button onclick="CategoryManager.deleteCategory('${cat.id}')" class="text-red-500 hover:text-red-700 p-1">
+                                    <span class="material-symbols-outlined text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            renderCategoriasDestacadas() {
+                const container = document.getElementById('categorias-destacadas-container');
+                if (!container) return;
+                
+                const categories = this.getCategories();
+                const productos = ProductManager.productos || [];
+                
+                if (categories.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-4">
+                            <p class="text-sm text-gray-400">No hay categorías</p>
+                            <button onclick="EmpresaPanelManager.loadSection('categorias')" class="mt-2 text-sm text-[#f4a4b4] hover:underline">
+                                Crear categoría
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const categoriasConConteo = categories.slice(0, 4).map(cat => ({
+                    nombre: cat.name,
+                    count: productos.filter(p => p.categoria === cat.name).length
+                }));
+                
+                container.innerHTML = categoriasConConteo.map(cat => `
+                    <div class="bg-gray-50 rounded-lg p-3 text-center">
+                        <span class="material-symbols-outlined text-2xl text-[#f4a4b4] mb-1">category</span>
+                        <h4 class="font-bold text-sm">${escapeHtml(cat.nombre)}</h4>
+                        <p class="text-xs text-gray-500">${cat.count} producto${cat.count !== 1 ? 's' : ''}</p>
+                    </div>
+                `).join('');
+            },
+
+            renderCategoryFilters() {
+                const container = document.getElementById('categoryFiltersContainer');
+                if (!container) return;
+                
+                const categories = this.getCategories();
+                let html = '<span class="filter-chip active" data-filter="todos" onclick="ProductManager.filterByCategory(\'todos\')">Todos</span>';
+                
+                categories.forEach(cat => {
+                    html += `<span class="filter-chip" data-filter="${escapeHtml(cat.name)}" onclick="ProductManager.filterByCategory('${escapeHtml(cat.name).replace(/'/g, "\\'")}')">${escapeHtml(cat.name)}</span>`;
+                });
+                
+                container.innerHTML = html;
+            }
+        };
+
+        function openEditCategoryModal(categoryId, categoryName) {
+            currentEditCategoryId = categoryId;
+            currentEditCategoryName = categoryName;
+            document.getElementById('editCategoryName').value = categoryName;
+            document.getElementById('editCategoryId').value = categoryId;
+            document.getElementById('editCategoryModal').classList.remove('hidden');
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditCategoryModal() {
+            currentEditCategoryId = null;
+            currentEditCategoryName = null;
+            document.getElementById('editCategoryModal').classList.add('hidden');
+            document.getElementById('modalOverlay').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function confirmEditCategory() {
+            const newName = document.getElementById('editCategoryName').value.trim();
+            const categoryId = document.getElementById('editCategoryId').value;
+            
+            if (!newName) {
+                Utils.showToast('El nombre de la categoría no puede estar vacío', 'error');
+                return;
+            }
+            
+            await CategoryManager.updateCategory(categoryId, newName);
+            closeEditCategoryModal();
+        }
+
+        function addNewCategory() {
+            const input = document.getElementById('newCategoryInput');
+            if (CategoryManager.addCategory(input.value)) {
+                input.value = '';
+            }
+        }
+
+        function addCategoryFromManager() {
+            const input = document.getElementById('categoryManagerInput');
+            if (CategoryManager.addCategory(input.value)) {
+                input.value = '';
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ===== CONFIGURACIÓN =====
+        const CONFIG = {
+            API_BASE: '',
+            STORAGE_KEYS: {
+                USER: 'localmarket_user'
+            }
+        };
+
+        // ===== UTILIDADES =====
+        const Utils = {
+            formatPrice(price) { return `$${parseFloat(price).toFixed(2)}`; },
+            getStorage(key) { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
+            setStorage(key, data) { localStorage.setItem(key, JSON.stringify(data)); },
+            showToast(message, type = 'success', duration = 3000) {
+                const existingToast = document.querySelector('.toast');
+                if (existingToast) existingToast.remove();
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.animation = 'slideInToast 0.3s reverse'; setTimeout(() => toast.remove(), 300); }, duration);
+            },
+            async fetchAPI(endpoint, options = {}) {
+                const url = CONFIG.API_BASE + endpoint;
+                const defaultOptions = { headers: { 'Content-Type': 'application/json' } };
+                try {
+                    const response = await fetch(url, { ...defaultOptions, ...options });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('API Error:', error);
+                    this.showToast('Error de conexión', 'error');
+                    throw error;
+                }
+            },
+            async uploadProductImage(file) {
+                const formData = new FormData();
+                formData.append('imagen', file);
+                try {
+                    const response = await fetch('/api/upload/producto', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    return data.imagen_url;
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    return null;
+                }
+            }
+        };
+
+        // ===== AUTENTICACIÓN =====
+        const AuthManager = {
+            getCurrentUser() { return Utils.getStorage(CONFIG.STORAGE_KEYS.USER); },
+            logout() {
+                if (confirm('¿Estás seguro de cerrar sesión?')) {
+                    localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+                    Utils.showToast('👋 Sesión cerrada');
+                    setTimeout(() => window.location.href = 'inicio_secion.html', 1000);
+                }
+            },
+            checkAuth() {
+                const user = this.getCurrentUser();
+                if (!user || user.rol !== 'socio') {
+                    Utils.showToast('Acceso no autorizado', 'error');
+                    setTimeout(() => window.location.href = 'inicio_secion.html', 1500);
+                    return false;
+                }
+                return user;
+            }
+        };
+
+        // ===== GESTIÓN DE PRODUCTOS =====
+        const ProductManager = {
+            productos: [],
+            currentFilterCategory: 'todos',
+            currentSearchTerm: '',
+            
+            async cargarProductos() {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) return;
+                try {
+                    const response = await fetch(`/api/empresas/${user.empresa_id}/productos`);
+                    this.productos = await response.json();
+                    console.log('📦 Productos cargados:', this.productos.length);
+                    
+                    CategoryManager.getCategories();
+                    
+                    this.renderProductosInicio();
+                    this.renderProductosGrid();
+                    document.getElementById('stats-productos').textContent = this.productos.length;
+                    
+                    CategoryManager.refreshAll();
+                } catch (error) { 
+                    console.error('Error cargando productos:', error); 
+                }
+            },
+            
+            renderProductosInicio() {
+                const grid = document.getElementById('inicio-productos-grid');
+                if (!grid) return;
+                if (this.productos.length === 0) {
+                    grid.innerHTML = `<div class="col-span-full text-center py-8"><span class="material-symbols-outlined text-4xl text-gray-300 mb-2">inventory</span><p class="text-sm text-gray-500">No tienes productos aún</p><button onclick="openProductModal()" class="mt-4 bg-[#f4a4b4] text-[#0d2922] px-6 py-2 rounded-lg font-bold text-sm">Agregar primer producto</button></div>`;
+                    return;
+                }
+                const primerosProductos = this.productos.slice(0, 4);
+                grid.innerHTML = primerosProductos.map(p => `<div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100"><div class="aspect-square bg-cover bg-center" style="background-image: url('${p.imagen_url || 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&h=400&fit=crop'}');"></div><div class="p-3"><h4 class="font-bold text-[#0d2922] text-sm truncate">${escapeHtml(p.nombre)}</h4><p class="text-xs text-gray-500">${escapeHtml(p.categoria)}</p><div class="flex justify-between items-center mt-2"><span class="font-bold text-[#f4a4b4] text-sm">${Utils.formatPrice(p.precio)}</span><span class="text-xs ${p.cantidad_stock > 0 ? 'text-green-600' : 'text-red-600'}">${p.cantidad_stock} uds</span></div></div></div>`).join('');
+            },
+            
+            renderProductosGrid() {
+                const grid = document.getElementById('productos-grid-container');
+                if (!grid) return;
+                
+                let filtered = [...this.productos];
+                if (this.currentFilterCategory !== 'todos') {
+                    filtered = filtered.filter(p => p.categoria === this.currentFilterCategory);
+                }
+                if (this.currentSearchTerm) {
+                    const term = this.currentSearchTerm.toLowerCase();
+                    filtered = filtered.filter(p => p.nombre.toLowerCase().includes(term));
+                }
+                
+                if (filtered.length === 0) {
+                    grid.innerHTML = `<div class="empty-state col-span-full"><span class="material-symbols-outlined text-5xl text-gray-300 mb-3">inventory_2</span><p class="text-gray-500">No se encontraron productos</p><button onclick="openProductModal()" class="mt-4 bg-[#f4a4b4] text-[#0d2922] px-6 py-2 rounded-lg font-bold text-sm">Agregar producto</button></div>`;
+                    return;
+                }
+                
+                grid.innerHTML = filtered.map(p => `
+                    <div class="product-card relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all">
+                        <div class="absolute top-2 right-2 flex gap-1 z-10">
+                            <button onclick="openEditProductModal(${p.id})" class="bg-white rounded-full p-1.5 shadow-md hover:bg-blue-500 hover:text-white transition-all">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                            </button>
+                            <button onclick="openDeleteModal(${p.id}, '${escapeHtml(p.nombre).replace(/'/g, "\\'")}')" class="bg-white rounded-full p-1.5 shadow-md hover:bg-red-500 hover:text-white transition-all">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('${p.imagen_url || 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&h=400&fit=crop'}');"></div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-[#0d2922] text-lg mb-1 truncate">${escapeHtml(p.nombre)}</h3>
+                            <p class="text-sm text-gray-500 mb-2">${escapeHtml(p.categoria)}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-[#f4a4b4]">${Utils.formatPrice(p.precio)}</span>
+                                <span class="text-xs ${p.cantidad_stock > 0 ? 'text-green-600' : 'text-red-600'}">Stock: ${p.cantidad_stock}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+            
+            filterProducts() {
+                this.currentSearchTerm = document.getElementById('searchProductInput')?.value || '';
+                this.renderProductosGrid();
+            },
+            
+            filterByCategory(category) {
+                this.currentFilterCategory = category;
+                document.querySelectorAll('.filter-chip').forEach(chip => {
+                    chip.classList.remove('active');
+                    if (chip.dataset.filter === category) {
+                        chip.classList.add('active');
+                    }
+                });
+                this.renderProductosGrid();
+            },
+            
+            async createProduct(formData) {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) { Utils.showToast('Error: No tienes una empresa asociada', 'error'); return false; }
+                
+                const btn = document.getElementById('productSubmitBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> Publicando...';
+                btn.disabled = true;
+                
+                try {
+                    let imagenUrl = null;
+                    if (formData.imagenFile) {
+                        imagenUrl = await Utils.uploadProductImage(formData.imagenFile);
+                    }
+                    
+                    const productoData = {
+                        empresa_id: user.empresa_id,
+                        nombre: formData.nombre,
+                        precio: formData.precio,
+                        categoria: formData.categoriaNombre,
+                        imagen_url: imagenUrl,
+                        cantidad_stock: formData.stock
+                    };
+                    
+                    const response = await fetch('/api/productos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productoData)
+                    });
+                    
+                    if (response.ok) {
+                        Utils.showToast('✅ Producto publicado exitosamente');
+                        await this.cargarProductos();
+                        CategoryManager.refreshAll();
+                        return true;
+                    } else {
+                        Utils.showToast('Error al publicar producto', 'error');
+                        return false;
+                    }
+                } catch (error) {
+                    Utils.showToast('Error al publicar producto', 'error');
+                    return false;
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            },
+            
+            async updateProduct(productId, formData) {
+                const btn = document.getElementById('productSubmitBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> Actualizando...';
+                btn.disabled = true;
+                
+                try {
+                    let imagenUrl = formData.imagenUrl;
+                    if (formData.imagenFile) {
+                        imagenUrl = await Utils.uploadProductImage(formData.imagenFile);
+                    }
+                    
+                    const productoData = {
+                        nombre: formData.nombre,
+                        precio: formData.precio,
+                        categoria: formData.categoriaNombre,
+                        imagen_url: imagenUrl,
+                        cantidad_stock: formData.stock
+                    };
+                    
+                    const response = await fetch(`/api/productos/${productId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productoData)
+                    });
+                    
+                    if (response.ok) {
+                        Utils.showToast('✅ Producto actualizado exitosamente');
+                        await this.cargarProductos();
+                        CategoryManager.refreshAll();
+                        return true;
+                    } else {
+                        Utils.showToast('Error al actualizar producto', 'error');
+                        return false;
+                    }
+                } catch (error) {
+                    Utils.showToast('Error al actualizar producto', 'error');
+                    return false;
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            },
+            
+            async deleteProduct(productId) {
+                try {
+                    const response = await fetch(`/api/productos/${productId}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        Utils.showToast('✅ Producto eliminado');
+                        await this.cargarProductos();
+                        CategoryManager.refreshAll();
+                    } else {
+                        Utils.showToast('Error al eliminar producto', 'error');
+                    }
+                } catch (error) {
+                    Utils.showToast('Error de conexión', 'error');
+                }
+            },
+            
+            async getProductById(productId) {
+                return this.productos.find(p => p.id === productId);
+            }
+        };
+        
+        async function openEditProductModal(productId) {
+            const product = await ProductManager.getProductById(productId);
+            if (product) {
+                openProductModal(product);
+            }
+        }
+
+        // ===== PANEL DE EMPRESA =====
+        const EmpresaPanelManager = {
+            currentSection: 'inicio',
+            empresaData: null,
+            
+            async init() {
+                if (!AuthManager.checkAuth()) return;
+                this.loadUserData();
+                await this.cargarDatosEmpresa();
+                this.loadSection('inicio');
+                await ProductManager.cargarProductos();
+                CategoryManager.refreshAll();
+                await this.cargarPedidos();
+                
+                if (typeof google !== 'undefined' && google.maps) {
+                    initMapAutocomplete();
+                }
+                
+                document.getElementById('productForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const categoryName = document.getElementById('selectedCategory').value;
+                    if (!categoryName) { Utils.showToast('Selecciona una categoría', 'error'); return; }
+                    
+                    const imageFile = document.getElementById('productImageFile').files[0];
+                    const editId = document.getElementById('editProductId').value;
+                    
+                    const formData = {
+                        nombre: document.getElementById('productName').value,
+                        precio: parseFloat(document.getElementById('productPrice').value),
+                        stock: parseInt(document.getElementById('productStock').value),
+                        categoriaNombre: categoryName,
+                        imagenFile: imageFile,
+                        imagenUrl: null
+                    };
+                    
+                    if (editId) {
+                        const existingProduct = await ProductManager.getProductById(parseInt(editId));
+                        formData.imagenUrl = existingProduct?.imagen_url;
+                        await ProductManager.updateProduct(parseInt(editId), formData);
+                    } else {
+                        await ProductManager.createProduct(formData);
+                    }
+                    closeProductModal();
+                });
+                
+                const empresaForm = document.getElementById('empresaForm');
+                if (empresaForm) empresaForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.guardarDatosEmpresa(); });
+                
+                const saveHorarioBtn = document.getElementById('saveHorarioBtn');
+                if (saveHorarioBtn) saveHorarioBtn.addEventListener('click', async () => { await this.guardarHorario(); });
+                
+                const passwordForm = document.getElementById('passwordChangeForm');
+                if (passwordForm) passwordForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.changePassword(); });
+                
+                const searchInput = document.getElementById('searchProductInput');
+                if (searchInput) {
+                    searchInput.addEventListener('keyup', () => ProductManager.filterProducts());
+                }
+            },
+            
+            async cargarDatosEmpresa() {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) return;
+                try {
+                    const empresa = await Utils.fetchAPI(`/api/empresas/${user.empresa_id}`);
+                    this.empresaData = empresa;
+                    document.getElementById('empresaNombre').value = empresa.nombre || '';
+                    document.getElementById('empresaCorreo').value = user.correo || '';
+                    document.getElementById('empresaTelefono').value = empresa.telefono || '';
+                    document.getElementById('empresaTipoProducto').value = empresa.tipo_producto || 'otro';
+                    
+                    if (empresa.horario) {
+                        let horario = empresa.horario;
+                        if (typeof horario === 'string') horario = JSON.parse(horario);
+                        setHorarioToForm(horario);
+                    }
+                    
+                    if (empresa.logo_url) {
+                        const preview = document.getElementById('empresaLogoPreview');
+                        preview.style.backgroundImage = `url('${empresa.logo_url}')`;
+                        preview.innerHTML = '';
+                        preview.classList.add('has-image');
+                        
+                        const sidebarAvatar = document.getElementById('company-avatar');
+                        sidebarAvatar.style.backgroundImage = `url('${empresa.logo_url}')`;
+                        sidebarAvatar.style.backgroundSize = 'cover';
+                        sidebarAvatar.innerHTML = '';
+                    }
+                    
+                    if (empresa.latitud && empresa.longitud) {
+                        setLocationFromData(empresa.latitud, empresa.longitud, empresa.direccion);
+                    } else if (empresa.direccion) {
+                        document.getElementById('location-input').value = empresa.direccion;
+                        document.getElementById('empresaDireccion').value = empresa.direccion;
+                        if (typeof google !== 'undefined' && google.maps) {
+                            const geocoder = new google.maps.Geocoder();
+                            geocoder.geocode({ address: empresa.direccion }, (results, status) => {
+                                if (status === 'OK' && results[0]) {
+                                    const lat = results[0].geometry.location.lat();
+                                    const lng = results[0].geometry.location.lng();
+                                    setLocationFromData(lat, lng, empresa.direccion);
+                                }
+                            });
+                        }
+                    }
+                    
+                    document.getElementById('company-name-sidebar').textContent = empresa.nombre || 'Mi Empresa';
+                    document.getElementById('company-email-sidebar').textContent = user.correo || '';
+                } catch (error) { console.error('Error cargando datos de empresa:', error); }
+            },
+            
+            async guardarDatosEmpresa() {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) { Utils.showToast('Error: No tienes una empresa asociada', 'error'); return; }
+                
+                const btn = document.querySelector('#empresaForm button[type="submit"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> Guardando...';
+                btn.disabled = true;
+                
+                try {
+                    let logoUrl = this.empresaData?.logo_url || null;
+                    const logoFile = document.getElementById('empresaLogoFile').files[0];
+                    if (logoFile) {
+                        const formData = new FormData();
+                        formData.append('logo', logoFile);
+                        formData.append('empresa_id', user.empresa_id);
+                        const uploadResponse = await fetch('/api/upload/empresa/logo', { method: 'POST', body: formData });
+                        const uploadData = await uploadResponse.json();
+                        if (uploadData.logo_url) logoUrl = uploadData.logo_url;
+                    }
+                    
+                    const data = {
+                        nombre: document.getElementById('empresaNombre').value,
+                        direccion: document.getElementById('empresaDireccion').value,
+                        telefono: document.getElementById('empresaTelefono').value,
+                        tipo_producto: document.getElementById('empresaTipoProducto').value,
+                        logo_url: logoUrl,
+                        latitud: document.getElementById('empresaLatitud').value || null,
+                        longitud: document.getElementById('empresaLongitud').value || null
+                    };
+                    
+                    const response = await fetch(`/api/empresas/${user.empresa_id}/completo`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) { 
+                        Utils.showToast('✅ Datos de empresa actualizados correctamente'); 
+                        document.getElementById('company-name-sidebar').textContent = data.nombre;
+                        this.empresaData = data;
+                    } else Utils.showToast(result.error || 'Error al guardar los datos', 'error');
+                    
+                    const correo = document.getElementById('empresaCorreo').value;
+                    if (correo && correo !== user.correo) {
+                        const perfilResponse = await fetch(`/api/socio/${user.id}/actualizar-perfil`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ nombre: data.nombre, correo: correo })
+                        });
+                        if (perfilResponse.ok) {
+                            const updatedUser = { ...user, nombre: data.nombre, correo: correo };
+                            localStorage.setItem('localmarket_user', JSON.stringify(updatedUser));
+                            document.getElementById('company-email-sidebar').textContent = correo;
+                        }
+                    }
+                } catch (error) { Utils.showToast('Error de conexión', 'error'); }
+                finally { btn.innerHTML = originalText; btn.disabled = false; }
+            },
+            
+            async guardarHorario() {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) { Utils.showToast('Error: No tienes una empresa asociada', 'error'); return; }
+                const horario = getHorarioFromForm();
+                const btn = document.getElementById('saveHorarioBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> Guardando...';
+                btn.disabled = true;
+                try {
+                    const response = await fetch(`/api/empresas/${user.empresa_id}/horario`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ horario })
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) Utils.showToast('✅ Horario guardado correctamente', 'success');
+                    else Utils.showToast(result.error || 'Error al guardar horario', 'error');
+                } catch (error) { Utils.showToast('Error de conexión', 'error'); }
+                finally { btn.innerHTML = originalText; btn.disabled = false; }
+            },
+            
+            async cargarPedidos() {
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.empresa_id) return;
+                try {
+                    const response = await fetch(`/api/empresas/${user.empresa_id}/pedidos`);
+                    const pedidos = await response.json();
+                    const tbody = document.getElementById('pedidos-empresa-table');
+                    if (!tbody) return;
+                    if (!pedidos || pedidos.length === 0) {
+                        tbody.innerHTML = `<td><td colspan="5" class="px-6 py-8 text-center text-gray-500">No hay pedidos aún</td></tr>`;
+                        return;
+                    }
+                    let ventasTotales = 0;
+                    tbody.innerHTML = pedidos.map(p => {
+                        ventasTotales += p.total || 0;
+                        return `<tr class="border-b border-gray-100"><td class="px-6 py-4 font-medium">#${p.id}</td><td class="px-6 py-4">${escapeHtml(p.cliente_nombre || 'Cliente')}</td><td class="px-6 py-4">${new Date(p.fecha).toLocaleDateString()}</td><td class="px-6 py-4 text-right font-bold">${Utils.formatPrice(p.total)}</td><td class="px-6 py-4"><span class="px-3 py-1 ${p.estado === 'entregado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} rounded-full text-xs font-bold">${p.estado}</span></td></tr>`;
+                    }).join('');
+                    document.getElementById('stats-ventas').textContent = ventasTotales;
+                } catch (error) { console.error('Error cargando pedidos:', error); }
+            },
+            
+            async changePassword() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+                if (!currentPassword || !newPassword || !confirmNewPassword) { Utils.showToast('Todos los campos son obligatorios', 'error'); return; }
+                if (newPassword !== confirmNewPassword) { Utils.showToast('Las nuevas contraseñas no coinciden', 'error'); return; }
+                if (newPassword.length < 6) { Utils.showToast('La nueva contraseña debe tener al menos 6 caracteres', 'error'); return; }
+                const user = AuthManager.getCurrentUser();
+                if (!user || !user.id) { Utils.showToast('Usuario no autenticado', 'error'); return; }
+                const btn = document.getElementById('changePasswordBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> Actualizando...';
+                btn.disabled = true;
+                try {
+                    const response = await fetch(`/api/usuarios/${user.id}/cambiar-password`, { 
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }) 
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.success) { Utils.showToast('✅ Contraseña actualizada correctamente'); document.getElementById('passwordChangeForm').reset(); }
+                    else Utils.showToast(data.error || 'Error al actualizar la contraseña', 'error');
+                } catch (error) { Utils.showToast('Error de conexión', 'error'); }
+                finally { btn.innerHTML = originalText; btn.disabled = false; }
+            },
+            
+            loadSection(section) {
+                this.currentSection = section;
+                document.querySelectorAll('.menu-btn').forEach(btn => { 
+                    btn.classList.remove('active-tab'); 
+                    if (btn.dataset.section === section) btn.classList.add('active-tab'); 
+                });
+                const titles = { 
+                    'inicio': 'Inicio', 
+                    'productos': 'Mis Productos', 
+                    'categorias': 'Mis Categorías', 
+                    'pedidos': 'Pedidos', 
+                    'miempresa': 'Mi Empresa', 
+                    'seguridad': 'Seguridad'
+                };
+                document.getElementById('section-title').textContent = titles[section] || 'Inicio';
+                document.querySelectorAll('.section-content').forEach(el => el.style.display = 'none');
+                document.getElementById(`section-${section}`).style.display = 'block';
+                if (section === 'categorias') CategoryManager.renderAllCategoriesList();
+                if (section === 'miempresa') this.cargarDatosEmpresa();
+                if (section === 'pedidos') this.cargarPedidos();
+                if (section === 'productos') {
+                    CategoryManager.renderCategoryFilters();
+                    ProductManager.filterProducts();
+                }
+            },
+            
+            loadUserData() {
+                const user = AuthManager.getCurrentUser();
+                if (user) {
+                    document.getElementById('company-email-sidebar').textContent = user.correo || 'empresa@localmarket.com';
+                }
+            }
+        };
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            EmpresaPanelManager.init();
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    const sidebar = document.getElementById('sidebar');
+                    const menuBtn = document.getElementById('mobileMenuButton');
+                    if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                        document.getElementById('sidebarOverlay').classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        // Hacer funciones globales
+        window.ProductManager = ProductManager;
+        window.EmpresaPanelManager = EmpresaPanelManager;
+        window.AuthManager = AuthManager;
+        window.Utils = Utils;
+        window.CategoryManager = CategoryManager;
+        window.openProductModal = openProductModal;
+        window.openEditProductModal = openEditProductModal;
+        window.closeProductModal = closeProductModal;
+        window.openDeleteModal = openDeleteModal;
+        window.closeDeleteModal = closeDeleteModal;
+        window.confirmDeleteProduct = confirmDeleteProduct;
+        window.openEditCategoryModal = openEditCategoryModal;
+        window.closeEditCategoryModal = closeEditCategoryModal;
+        window.confirmEditCategory = confirmEditCategory;
+        window.addNewCategory = addNewCategory;
+        window.addCategoryFromManager = addCategoryFromManager;
+        window.selectCategory = selectCategory;
+        window.previewImage = previewImage;
+        window.previewEmpresaLogo = previewEmpresaLogo;
+        window.updateSidebarLogo = updateSidebarLogo;
+        window.toggleSidebar = toggleSidebar;
+        window.togglePasswordVisibility = togglePasswordVisibility;
+        window.toggleDaySchedule = toggleDaySchedule;
+        window.switchEmpresaTab = switchEmpresaTab;
+    </script>
+</body>
+</html>

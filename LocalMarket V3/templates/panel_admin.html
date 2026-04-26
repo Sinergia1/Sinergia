@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Panel de Administración - LocalMarket</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-tab {
+            background-color: #f4a4b4 !important;
+            color: #0d2922 !important;
+            font-weight: 600 !important;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            max-width: 90%;
+        }
+        @media (max-width: 768px) {
+            .toast {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                text-align: center;
+            }
+        }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.info { background-color: #3b82f6; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f4a4b4;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 100;
+                transition: left 0.3s ease;
+            }
+            .sidebar-mobile.open { left: 0; }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+            }
+            .sidebar-overlay.open { display: block; }
+            .mobile-menu-button { display: block; }
+        }
+        @media (min-width: 769px) {
+            .mobile-menu-button { display: none; }
+        }
+        .responsive-table {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+        .responsive-table table { min-width: 600px; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+        @keyframes modalSlideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .badge-admin {
+            background-color: #f4a4b4;
+            color: #0d2922;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .logo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px solid #f4a4b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 0 auto;
+            background-color: #f0f0f0;
+        }
+        .logo-preview.has-image { border-color: #10b981; }
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: #f3f4f6;
+            border-radius: 30px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .filter-chip.active {
+            background-color: #f4a4b4;
+            color: #0d2922;
+            font-weight: 600;
+        }
+        .filter-chip:hover:not(.active) {
+            background-color: #e5e7eb;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f4a4b4;
+            color: #0d2922;
+        }
+        .category-badge.selected {
+            background-color: #0d2922 !important;
+            color: white !important;
+        }
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px dashed #f4a4b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .image-preview.has-image {
+            border: 2px solid #10b981;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 70px;
+        }
+        .status-active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .status-inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 overflow-x-hidden">
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <button id="mobileMenuButton" class="mobile-menu-button fixed bottom-4 right-4 z-50 bg-primary text-dark-green p-3 rounded-full shadow-lg" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <div class="flex h-screen">
+        <aside id="sidebar" class="sidebar-mobile md:static md:w-64 bg-[#0d2922] text-white flex flex-col h-full">
+            <div class="p-4 sm:p-6">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#f4a4b4] text-2xl sm:text-3xl">shopping_bag</span>
+                    <h1 class="text-lg sm:text-xl font-bold">LocalMarket</h1>
+                </div>
+                <p class="text-xs text-white/60 mt-1 uppercase tracking-widest">ADMIN PANEL</p>
+            </div>
+            
+            <div class="px-4 sm:px-6 pb-4 border-b border-white/10 mb-4">
+                <div class="bg-white/10 rounded-lg p-2 sm:p-3">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f4a4b4]/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[#f4a4b4] text-sm sm:text-base">admin_panel_settings</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-xs sm:text-sm truncate" id="admin-nombre">Cargando...</p>
+                            <p class="text-[10px] sm:text-xs text-white/60 truncate" id="admin-email">Cargando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 px-3 sm:px-4">
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 active-tab text-xs sm:text-sm" data-section="solicitudes" onclick="AdminPanelManager.loadSection('solicitudes')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">pending_actions</span>
+                    <span>Solicitudes</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="empresas" onclick="AdminPanelManager.loadSection('empresas')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">business</span>
+                    <span>Empresas</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="productos" onclick="AdminPanelManager.loadSection('productos')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">inventory_2</span>
+                    <span>Productos</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="categorias" onclick="AdminPanelManager.loadSection('categorias')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">category</span>
+                    <span>Categorías</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="usuarios" onclick="AdminPanelManager.loadSection('usuarios')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">group</span>
+                    <span>Usuarios</span>
+                </button>
+                <button class="menu-btn w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 text-white/70 hover:bg-white/10 hover:text-white transition-all text-left text-xs sm:text-sm" data-section="stats" onclick="AdminPanelManager.loadSection('stats')">
+                    <span class="material-symbols-outlined text-base sm:text-lg">bar_chart</span>
+                    <span>Estadísticas</span>
+                </button>
+            </nav>
+            
+            <div class="p-3 sm:p-4 border-t border-white/10">
+                <button onclick="AuthManager.logout()" class="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all text-xs sm:text-sm">
+                    <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                    <span>Cerrar sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+            <header class="h-14 sm:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-4 md:px-8 shadow-sm">
+                <h1 class="text-base sm:text-lg md:text-xl font-bold text-[#0d2922]" id="section-title">Solicitudes</h1>
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
+                        <input type="text" id="search-input" class="pl-7 sm:pl-9 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-gray-200 rounded-lg text-xs sm:text-sm w-36 sm:w-48 md:w-64 focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent" placeholder="Buscar...">
+                    </div>
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#f4a4b4]/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[#f4a4b4] text-xs sm:text-sm">admin_panel_settings</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8">
+                <!-- SECCIÓN SOLICITUDES -->
+                <div class="section-content active" id="section-solicitudes">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Solicitudes de empresas</h2>
+                            <p class="text-xs sm:text-sm text-gray-500">Gestiona las solicitudes de nuevos vendedores</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="responsive-table">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Empresa / Dueño</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Contacto</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Ubicación</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Estado</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100" id="solicitudes-table-body">
+                                    <tr><td colspan="5" class="px-3 sm:px-6 py-6 sm:py-8 text-center"><div class="loading-spinner"></div><p class="text-xs sm:text-sm text-gray-500 mt-2">Cargando solicitudes...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN EMPRESAS -->
+                <div class="section-content" id="section-empresas" style="display: none;">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Empresas registradas</h2>
+                            <p class="text-xs sm:text-sm text-gray-500">Gestiona las empresas del marketplace</p>
+                        </div>
+                        <button onclick="AdminPanelManager.openEmpresaModal()" class="flex items-center gap-2 bg-[#0d2922] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-opacity-90 transition-colors text-xs sm:text-sm">
+                            <span class="material-symbols-outlined text-sm sm:text-base">add_business</span>
+                            Nueva empresa
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="responsive-table">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Empresa</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Dirección</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Teléfono</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Tipo</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Estado</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100" id="empresas-table-body">
+                                    <tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center"><div class="loading-spinner"></div><p class="text-xs sm:text-sm text-gray-500 mt-2">Cargando empresas...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN PRODUCTOS -->
+                <div class="section-content" id="section-productos" style="display: none;">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Productos</h2>
+                            <p class="text-xs sm:text-sm text-gray-500">Todos los productos del marketplace</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="categoria-filter" class="border border-gray-200 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent" onchange="AdminPanelManager.filterProductosByCategoria()">
+                                <option value="">Todas las categorías</option>
+                            </select>
+                            <button onclick="clearFilters()" class="border border-gray-200 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm hover:bg-gray-50 transition-colors">
+                                <span class="material-symbols-outlined text-sm">clear</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="responsive-table">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Producto</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Empresa</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-right text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Precio</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-right text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Stock</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Categoría</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100" id="productos-table-body">
+                                    <tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center"><div class="loading-spinner"></div><p class="text-xs sm:text-sm text-gray-500 mt-2">Cargando productos...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN CATEGORÍAS -->
+                <div class="section-content" id="section-categorias" style="display: none;">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Categorías globales</h2>
+                            <p class="text-xs sm:text-sm text-gray-500">Gestiona las categorías del marketplace</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                        <div class="flex gap-3 mb-6">
+                            <input type="text" id="new-category-input" 
+                                   class="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent outline-none text-sm"
+                                   placeholder="Nombre de la nueva categoría...">
+                            <button onclick="AdminPanelManager.addGlobalCategory()" 
+                                    class="bg-[#0d2922] text-white px-6 py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">add</span>
+                                Crear categoría
+                            </button>
+                        </div>
+                        
+                        <h3 class="font-bold text-sm text-gray-700 mb-3">Lista de categorías:</h3>
+                        <div id="global-categories-list" class="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 min-h-[150px]">
+                            <div class="text-gray-400 w-full text-center py-4 text-sm">Cargando categorías...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN USUARIOS -->
+                <div class="section-content" id="section-usuarios" style="display: none;">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Usuarios</h2>
+                            <p class="text-xs sm:text-sm text-gray-500">Gestiona los usuarios de la plataforma</p>
+                        </div>
+                        <button onclick="AdminPanelManager.openUsuarioModal()" class="flex items-center gap-2 bg-[#0d2922] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-opacity-90 transition-colors text-xs sm:text-sm">
+                            <span class="material-symbols-outlined text-sm sm:text-base">person_add</span>
+                            Nuevo usuario
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="responsive-table">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Usuario</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Email</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Rol</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Empresa</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Estado</th>
+                                        <th class="px-3 sm:px-6 py-2 sm:py-4 text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100" id="usuarios-table-body">
+                                    <tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center"><div class="loading-spinner"></div><p class="text-xs sm:text-sm text-gray-500 mt-2">Cargando usuarios...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN ESTADÍSTICAS -->
+                <div class="section-content" id="section-stats" style="display: none;">
+                    <div class="mb-4 sm:mb-6">
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#0d2922]">Estadísticas generales</h2>
+                        <p class="text-xs sm:text-sm text-gray-500">Resumen de la plataforma</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6"><div class="flex items-center justify-between mb-2 sm:mb-4"><span class="material-symbols-outlined text-2xl sm:text-3xl text-[#f4a4b4]">business</span><span class="text-2xl sm:text-3xl font-bold text-[#0d2922]" id="stats-empresas">0</span></div><h3 class="text-xs sm:text-sm text-gray-600 font-medium">Empresas activas</h3></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6"><div class="flex items-center justify-between mb-2 sm:mb-4"><span class="material-symbols-outlined text-2xl sm:text-3xl text-[#f4a4b4]">inventory_2</span><span class="text-2xl sm:text-3xl font-bold text-[#0d2922]" id="stats-productos-total">0</span></div><h3 class="text-xs sm:text-sm text-gray-600 font-medium">Productos totales</h3></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6"><div class="flex items-center justify-between mb-2 sm:mb-4"><span class="material-symbols-outlined text-2xl sm:text-3xl text-[#f4a4b4]">shopping_cart</span><span class="text-2xl sm:text-3xl font-bold text-[#0d2922]" id="stats-pedidos">0</span></div><h3 class="text-xs sm:text-sm text-gray-600 font-medium">Pedidos realizados</h3></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6"><div class="flex items-center justify-between mb-2 sm:mb-4"><span class="material-symbols-outlined text-2xl sm:text-3xl text-[#f4a4b4]">pending_actions</span><span class="text-2xl sm:text-3xl font-bold text-[#0d2922]" id="stats-solicitudes">0</span></div><h3 class="text-xs sm:text-sm text-gray-600 font-medium">Solicitudes pendientes</h3></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6"><h3 class="text-base sm:text-lg font-bold text-[#0d2922] mb-4">Clientes registrados</h3><div class="flex items-center gap-4"><span class="material-symbols-outlined text-4xl sm:text-5xl text-[#f4a4b4]">people</span><span class="text-3xl sm:text-4xl font-bold text-[#0d2922]" id="stats-clientes">0</span><span class="text-sm text-gray-500">usuarios activos</span></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL PARA AGREGAR/EDITAR EMPRESA -->
+    <div id="empresaModal" class="modal">
+        <div class="modal-content">
+            <div class="bg-gradient-to-r from-[#0d2922] to-[#1a4a3a] text-white px-4 sm:px-6 py-4 rounded-t-2xl flex justify-between items-center">
+                <h3 class="text-lg font-bold" id="empresaModalTitle">Editar Empresa</h3>
+                <button onclick="AdminPanelManager.closeEmpresaModal()" class="text-white/80 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="empresaForm" class="p-4 sm:p-6 space-y-4" onsubmit="AdminPanelManager.saveEmpresa(event)">
+                <input type="hidden" id="empresa_id">
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Nombre de la empresa *</label><input type="text" id="empresa_nombre" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Dirección *</label><textarea id="empresa_direccion" rows="2" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm resize-none"></textarea></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Teléfono</label><input type="text" id="empresa_telefono" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Tipo de producto</label><select id="empresa_tipo" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"><option value="alimentos">Alimentos</option><option value="ropa">Ropa</option><option value="tecnologia">Tecnología</option><option value="farmacia">Farmacia</option><option value="servicios">Servicios</option><option value="artesanias">Artesanías</option><option value="hogar">Hogar</option><option value="belleza">Belleza</option><option value="mascotas">Mascotas</option><option value="otro">Otro</option></select></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Logo</label><input type="file" id="empresa_logo_file" accept="image/*" class="hidden" onchange="AdminPanelManager.previewEmpresaLogo(this)"><div id="empresa_logo_preview" class="logo-preview" onclick="document.getElementById('empresa_logo_file').click()"><span class="material-symbols-outlined text-2xl">add_photo_alternate</span></div></div>
+                <div class="flex gap-3 pt-4"><button type="submit" class="flex-1 bg-[#0d2922] text-white py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all">Guardar</button><button type="button" onclick="AdminPanelManager.closeEmpresaModal()" class="flex-1 border border-gray-300 py-2 rounded-lg font-bold hover:bg-gray-50 transition-all">Cancelar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PARA AGREGAR/EDITAR USUARIO -->
+    <div id="usuarioModal" class="modal">
+        <div class="modal-content">
+            <div class="bg-gradient-to-r from-[#0d2922] to-[#1a4a3a] text-white px-4 sm:px-6 py-4 rounded-t-2xl flex justify-between items-center">
+                <h3 class="text-lg font-bold" id="usuarioModalTitle">Nuevo Usuario</h3>
+                <button onclick="AdminPanelManager.closeUsuarioModal()" class="text-white/80 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="usuarioForm" class="p-4 sm:p-6 space-y-4" onsubmit="AdminPanelManager.saveUsuario(event)">
+                <input type="hidden" id="usuario_id">
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Nombre completo *</label><input type="text" id="usuario_nombre" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Correo electrónico *</label><input type="email" id="usuario_correo" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div>
+                <div id="password-field"><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Contraseña *</label><input type="password" id="usuario_password" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"><p class="text-xs text-gray-500 mt-1">Dejar en blanco para mantener la contraseña actual (solo en edición)</p></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Rol</label><select id="usuario_rol" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"><option value="cliente">Cliente</option><option value="socio">Socio</option><option value="administrador">Administrador</option></select></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Empresa (solo para socios)</label><select id="usuario_empresa_id" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"><option value="">Sin empresa</option></select></div>
+                <div class="flex gap-3 pt-4"><button type="submit" class="flex-1 bg-[#0d2922] text-white py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all">Guardar</button><button type="button" onclick="AdminPanelManager.closeUsuarioModal()" class="flex-1 border border-gray-300 py-2 rounded-lg font-bold hover:bg-gray-50 transition-all">Cancelar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PARA EDITAR PRODUCTO -->
+    <div id="productoModal" class="modal">
+        <div class="modal-content">
+            <div class="bg-gradient-to-r from-[#0d2922] to-[#1a4a3a] text-white px-4 sm:px-6 py-4 rounded-t-2xl flex justify-between items-center">
+                <h3 class="text-lg font-bold">Editar Producto</h3>
+                <button onclick="AdminPanelManager.closeProductoModal()" class="text-white/80 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="productoForm" class="p-4 sm:p-6 space-y-4" onsubmit="AdminPanelManager.saveProducto(event)">
+                <input type="hidden" id="producto_edit_id">
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Nombre del producto *</label><input type="text" id="producto_edit_nombre" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div>
+                <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Precio *</label><input type="number" step="0.01" id="producto_edit_precio" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div><div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Stock *</label><input type="number" id="producto_edit_stock" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Categoría</label><input type="text" id="producto_edit_categoria" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div>
+                <div><label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">URL de imagen</label><input type="url" id="producto_edit_imagen" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f4a4b4] focus:border-transparent text-sm"></div>
+                <div class="flex gap-3 pt-4"><button type="submit" class="flex-1 bg-[#0d2922] text-white py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all">Guardar cambios</button><button type="button" onclick="AdminPanelManager.closeProductoModal()" class="flex-1 border border-gray-300 py-2 rounded-lg font-bold hover:bg-gray-50 transition-all">Cancelar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+        
+        function clearFilters() {
+            document.getElementById('categoria-filter').value = '';
+            if (AdminPanelManager) {
+                AdminPanelManager.currentCategoriaFilter = '';
+                AdminPanelManager.applyProductosFilter();
+            }
+        }
+
+        document.querySelectorAll('.menu-btn').forEach(btn => {
+            btn.addEventListener('click', () => { if (window.innerWidth <= 768) toggleSidebar(); });
+        });
+
+        const CONFIG = { API_BASE: '', STORAGE_KEYS: { USER: 'localmarket_user' } };
+
+        const Utils = {
+            formatPrice(price) { return `$${parseFloat(price).toFixed(2)}`; },
+            getStorage(key) { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
+            setStorage(key, data) { localStorage.setItem(key, JSON.stringify(data)); },
+            showToast(message, type = 'success', duration = 3000) {
+                const existingToast = document.querySelector('.toast');
+                if (existingToast) existingToast.remove();
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.animation = 'slideIn 0.3s reverse'; setTimeout(() => toast.remove(), 300); }, duration);
+            },
+            async fetchAPI(endpoint, options = {}) {
+                const url = CONFIG.API_BASE + endpoint;
+                const defaultOptions = { headers: { 'Content-Type': 'application/json' } };
+                try {
+                    const response = await fetch(url, { ...defaultOptions, ...options });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('API Error:', error);
+                    this.showToast(error.message || 'Error de conexión', 'error');
+                    throw error;
+                }
+            },
+            navigateTo(page) { window.location.href = page; }
+        };
+
+        const AuthManager = {
+            getCurrentUser() { return Utils.getStorage(CONFIG.STORAGE_KEYS.USER); },
+            logout() { if (confirm('¿Estás seguro de cerrar sesión?')) { localStorage.removeItem(CONFIG.STORAGE_KEYS.USER); Utils.showToast('👋 Sesión cerrada', 'success'); setTimeout(() => Utils.navigateTo('inicio_secion.html'), 1000); } },
+            checkAuth() {
+                const user = this.getCurrentUser();
+                if (!user) { Utils.showToast('Por favor inicia sesión primero', 'info'); setTimeout(() => Utils.navigateTo('inicio_secion.html'), 1500); return false; }
+                if (user.rol !== 'administrador') { Utils.showToast('No tienes permisos de administrador', 'error'); setTimeout(() => { Utils.navigateTo(user.rol === 'socio' ? 'panel_empresa.html' : 'inicio.html'); }, 1500); return false; }
+                return user;
+            },
+            loadUserInfo() {
+                const user = this.getCurrentUser();
+                if (user) { 
+                    document.getElementById('admin-nombre').textContent = user.nombre || 'Administrador'; 
+                    document.getElementById('admin-email').textContent = user.correo || 'admin@localmarket.com'; 
+                }
+            }
+        };
+
+        const SolicitudManager = {
+            async cargarSolicitudes() {
+                const tbody = document.getElementById('solicitudes-table-body');
+                if (!tbody) return;
+                try {
+                    const solicitudes = await Utils.fetchAPI('/api/solicitudes');
+                    if (!solicitudes || solicitudes.length === 0) { 
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-3 sm:px-6 py-8 sm:py-12 text-center"><span class="material-symbols-outlined text-3xl sm:text-4xl text-gray-300 mb-2">inbox</span><p class="text-xs sm:text-sm text-gray-500">No hay solicitudes pendientes</p></td></tr>`; 
+                        return; 
+                    }
+                    tbody.innerHTML = solicitudes.map(s => `<tr class="hover:bg-gray-50 transition-colors ${s.estado === 'pendiente' ? 'bg-yellow-50/30' : ''}">
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><div class="flex items-center gap-2 sm:gap-3"><div class="w-8 h-8 sm:w-10 sm:h-10 bg-[#f4a4b4]/10 rounded-lg flex items-center justify-center text-[#f4a4b4]"><span class="material-symbols-outlined text-sm sm:text-base">store</span></div><div><div class="font-semibold text-gray-900 text-xs sm:text-sm">${s.nombre_negocio}</div><div class="text-[10px] sm:text-xs text-gray-500">${s.propietario}</div></div></div></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><div class="text-xs sm:text-sm"><div>${s.email}</div><div class="text-[10px] sm:text-xs text-gray-500">${s.telefono}</div></div></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell"><div class="text-xs sm:text-sm"><div>${s.ciudad}</div><div class="text-[10px] sm:text-xs text-gray-500">${s.direccion ? s.direccion.substring(0, 20) + '...' : ''}</div></div></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><span class="px-2 sm:px-3 py-1 ${s.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-700' : s.estado === 'aprobada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded-full text-[10px] sm:text-xs font-bold">${s.estado.charAt(0).toUpperCase() + s.estado.slice(1)}</span></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4">${s.estado === 'pendiente' ? `<div class="flex gap-1 sm:gap-2 justify-center"><button onclick="SolicitudManager.aprobar(${s.id})" class="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1"><span class="material-symbols-outlined text-xs sm:text-sm">check</span><span class="hidden xs:inline">Aprobar</span></button><button onclick="SolicitudManager.rechazar(${s.id})" class="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1"><span class="material-symbols-outlined text-xs sm:text-sm">close</span><span class="hidden xs:inline">Rechazar</span></button></div>` : `<div class="text-center text-[10px] sm:text-xs text-gray-400">${s.estado === 'aprobada' ? '✅ Aprobada' : '❌ Rechazada'}</div>`}</td>
+                    </tr>`).join('');
+                } catch (error) { 
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-red-500 text-xs sm:text-sm">Error al cargar solicitudes</td></tr>`; 
+                }
+            },
+            async aprobar(id) { 
+                if (!confirm('¿Estás seguro de aprobar esta solicitud? Se enviará un correo al solicitante.')) return; 
+                try { 
+                    const response = await fetch(`/api/solicitudes/${id}/aprobar`, { method: 'PUT' }); 
+                    const data = await response.json(); 
+                    if (response.ok) { 
+                        Utils.showToast(data.message || '✅ Solicitud aprobada', 'success'); 
+                        this.cargarSolicitudes(); 
+                        if (AdminPanelManager) {
+                            AdminPanelManager.cargarEmpresas(); 
+                            AdminPanelManager.cargarProductos(); 
+                            AdminPanelManager.cargarUsuarios(); 
+                            AdminPanelManager.cargarStats();
+                            AdminPanelManager.cargarCategoriasParaFiltro();
+                        }
+                    } else { 
+                        Utils.showToast(data.error || 'Error al aprobar', 'error'); 
+                    }
+                } catch (error) { 
+                    Utils.showToast('Error de conexión', 'error'); 
+                } 
+            },
+            async rechazar(id) { 
+                if (!confirm('¿Estás seguro de rechazar esta solicitud?')) return; 
+                try { 
+                    const response = await fetch(`/api/solicitudes/${id}/rechazar`, { method: 'PUT' }); 
+                    if (response.ok) { 
+                        Utils.showToast('Solicitud rechazada', 'info'); 
+                        this.cargarSolicitudes(); 
+                    } else { 
+                        Utils.showToast('Error al rechazar', 'error'); 
+                    }
+                } catch (error) { 
+                    Utils.showToast('Error de conexión', 'error'); 
+                } 
+            }
+        };
+
+        const AdminPanelManager = {
+            currentSection: 'solicitudes', allProductos: [], allEmpresas: [], allUsuarios: [], allCategorias: [], currentCategoriaFilter: '',
+            init() { 
+                if (!AuthManager.checkAuth()) return; 
+                AuthManager.loadUserInfo(); 
+                SolicitudManager.cargarSolicitudes(); 
+                this.cargarEmpresas(); 
+                this.cargarProductos(); 
+                this.cargarUsuarios(); 
+                this.cargarStats(); 
+                this.cargarCategoriasParaFiltro(); 
+                this.cargarCategoriasGlobales(); 
+                this.cargarEmpresasParaSelect(); 
+                this.setupSearch(); 
+            },
+            loadSection(section) {
+                this.currentSection = section;
+                document.querySelectorAll('.menu-btn').forEach(btn => { 
+                    btn.classList.remove('active-tab', 'bg-[#f4a4b4]', 'text-[#0d2922]'); 
+                    btn.classList.add('text-white/70'); 
+                    if (btn.dataset.section === section) { 
+                        btn.classList.add('active-tab', 'bg-[#f4a4b4]', 'text-[#0d2922]'); 
+                        btn.classList.remove('text-white/70'); 
+                    } 
+                });
+                const titles = { 
+                    solicitudes: 'Solicitudes', 
+                    empresas: 'Empresas', 
+                    productos: 'Productos', 
+                    categorias: 'Categorías', 
+                    usuarios: 'Usuarios', 
+                    stats: 'Estadísticas' 
+                };
+                document.getElementById('section-title').textContent = titles[section] || 'Panel Admin';
+                document.querySelectorAll('.section-content').forEach(el => el.style.display = 'none');
+                document.getElementById(`section-${section}`).style.display = 'block';
+                document.getElementById('search-input').value = '';
+                if (section === 'categorias') this.cargarCategoriasGlobales();
+                if (section === 'stats') this.cargarStats();
+            },
+            async cargarEmpresas() {
+                const tbody = document.getElementById('empresas-table-body');
+                if (!tbody) return;
+                try {
+                    this.allEmpresas = await Utils.fetchAPI('/api/empresas/todas');
+                    if (!this.allEmpresas || this.allEmpresas.length === 0) { 
+                        tbody.innerHTML = `<tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-500">No hay empresas registradas</td></tr>`; 
+                        return; 
+                    }
+                    tbody.innerHTML = this.allEmpresas.map(e => `<tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><div class="flex items-center gap-2 sm:gap-3"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-200"><img src="${e.logo_url || 'https://via.placeholder.com/40'}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/40'"></div><div><div class="font-semibold text-gray-900 text-xs sm:text-sm">${this.escapeHtml(e.nombre)}</div><div class="text-[10px] sm:text-xs text-gray-500">${e.direccion ? e.direccion.substring(0, 30) + '...' : ''}</div></div></div></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 hidden sm:table-cell">${e.direccion ? e.direccion.substring(0, 40) + '...' : '-'}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 hidden md:table-cell">${e.telefono || 'N/A'}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 hidden lg:table-cell"><span class="badge-admin">${e.tipo_producto || 'General'}</span></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><span class="status-badge ${e.activo ? 'status-active' : 'status-inactive'}">${e.activo ? 'Activo' : 'Inactivo'}</span></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 text-center"><div class="flex gap-1 justify-center"><button onclick="AdminPanelManager.editarEmpresa(${e.id})" class="text-blue-500 hover:text-blue-700 p-1" title="Editar"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="AdminPanelManager.toggleEmpresaEstado(${e.id}, ${e.activo})" class="text-orange-500 hover:text-orange-700 p-1" title="${e.activo ? 'Desactivar' : 'Activar'}"><span class="material-symbols-outlined text-sm">${e.activo ? 'visibility_off' : 'visibility'}</span></button><button onclick="AdminPanelManager.eliminarEmpresa(${e.id})" class="text-red-500 hover:text-red-700 p-1" title="Eliminar"><span class="material-symbols-outlined text-sm">delete</span></button></div></td>
+                    </tr>`).join('');
+                } catch (error) { 
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-red-500 text-xs sm:text-sm">Error al cargar empresas</td></tr>`; 
+                }
+            },
+            async cargarProductos() {
+                const tbody = document.getElementById('productos-table-body');
+                if (!tbody) return;
+                try {
+                    this.allProductos = await Utils.fetchAPI('/api/productos/todos');
+                    this.applyProductosFilter();
+                } catch (error) { 
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-red-500 text-xs sm:text-sm">Error al cargar productos</td></tr>`; 
+                }
+            },
+            applyProductosFilter() {
+                const tbody = document.getElementById('productos-table-body');
+                if (!tbody) return;
+                let filtered = [...this.allProductos];
+                if (this.currentCategoriaFilter) filtered = filtered.filter(p => p.categoria === this.currentCategoriaFilter);
+                if (filtered.length === 0) { 
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-500">No hay productos que coincidan con el filtro</td></tr>`; 
+                    return; 
+                }
+                tbody.innerHTML = filtered.map(p => `<tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-3 sm:px-6 py-3 sm:py-4"><div class="flex items-center gap-2 sm:gap-3"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-gray-100"><img src="${p.imagen_url || 'https://via.placeholder.com/40'}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/40'"></div><div class="font-semibold text-gray-900 text-xs sm:text-sm">${this.escapeHtml(p.nombre)}</div></div></td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 hidden md:table-cell">${this.escapeHtml(p.empresa_nombre) || 'N/A'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-right font-medium text-xs sm:text-sm">${Utils.formatPrice(p.precio)}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-right hidden sm:table-cell text-xs sm:text-sm"><span class="${p.cantidad_stock <= 5 ? 'text-red-500 font-bold' : 'text-gray-600'}">${p.cantidad_stock}</span></td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm"><span class="px-2 py-1 bg-gray-100 rounded-full text-xs">${this.escapeHtml(p.categoria) || 'Sin categoría'}</span></td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-center"><div class="flex gap-1 justify-center"><button onclick="AdminPanelManager.editarProducto(${p.id})" class="text-blue-500 hover:text-blue-700 p-1" title="Editar"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="AdminPanelManager.eliminarProducto(${p.id})" class="text-red-500 hover:text-red-700 p-1" title="Eliminar"><span class="material-symbols-outlined text-sm">delete</span></button></div></td>
+                </tr>`).join('');
+            },
+            async eliminarProducto(productoId) { 
+                if (!confirm('¿Estás seguro de eliminar este producto?')) return; 
+                try { 
+                    const response = await fetch(`/api/productos/${productoId}`, { method: 'DELETE' }); 
+                    if (response.ok) { 
+                        Utils.showToast('✅ Producto eliminado', 'success'); 
+                        this.cargarProductos(); 
+                        this.cargarStats(); 
+                    } else { 
+                        Utils.showToast('Error al eliminar producto', 'error'); 
+                    }
+                } catch (error) { 
+                    Utils.showToast('Error de conexión', 'error'); 
+                } 
+            },
+            async editarProducto(productoId) { 
+                const producto = this.allProductos.find(p => p.id === productoId); 
+                if (producto) this.openProductoModal(producto); 
+            },
+            filterProductosByCategoria() { 
+                this.currentCategoriaFilter = document.getElementById('categoria-filter').value; 
+                this.applyProductosFilter(); 
+            },
+            async cargarCategoriasParaFiltro() { 
+                try { 
+                    const categorias = await Utils.fetchAPI('/api/categorias/todas'); 
+                    const select = document.getElementById('categoria-filter'); 
+                    if (select && categorias) { 
+                        select.innerHTML = '<option value="">Todas las categorías</option>'; 
+                        categorias.forEach(cat => { 
+                            const option = document.createElement('option'); 
+                            option.value = cat; 
+                            option.textContent = cat; 
+                            select.appendChild(option); 
+                        }); 
+                    } 
+                } catch (error) { 
+                    console.error('Error loading categories:', error); 
+                } 
+            },
+            async cargarCategoriasGlobales() {
+                const container = document.getElementById('global-categories-list');
+                if (!container) return;
+                try {
+                    const categorias = await Utils.fetchAPI('/api/categorias/todas');
+                    this.allCategorias = categorias;
+                    if (!categorias || categorias.length === 0) { 
+                        container.innerHTML = '<div class="text-gray-400 w-full text-center py-4 text-sm">No hay categorías creadas. ¡Crea la primera!</div>'; 
+                        return; 
+                    }
+                    container.innerHTML = categorias.map(cat => `<span class="category-badge" style="background-color: #e5e7eb; color: #374151;">${this.escapeHtml(cat)}</span>`).join('');
+                } catch (error) { 
+                    container.innerHTML = '<div class="text-red-400 w-full text-center py-4 text-sm">Error al cargar categorías</div>'; 
+                }
+            },
+            async addGlobalCategory() {
+                const input = document.getElementById('new-category-input');
+                const nombre = input.value.trim();
+                if (!nombre) { 
+                    Utils.showToast('Ingresa un nombre para la categoría', 'error'); 
+                    return; 
+                }
+                Utils.showToast(`Categoría "${nombre}" creada (solo como referencia en el filtro)`, 'info');
+                input.value = '';
+                this.cargarCategoriasGlobales();
+                this.cargarCategoriasParaFiltro();
+            },
+            async cargarUsuarios() {
+                const tbody = document.getElementById('usuarios-table-body');
+                if (!tbody) return;
+                try {
+                    const response = await fetch('/api/usuarios/todos');
+                    if (!response.ok) throw new Error('Error al cargar usuarios');
+                    this.allUsuarios = await response.json();
+                    if (!this.allUsuarios || this.allUsuarios.length === 0) { 
+                        tbody.innerHTML = `<tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-500">No hay usuarios registrados</td></tr>`; 
+                        return; 
+                    }
+                    tbody.innerHTML = this.allUsuarios.map(u => `<tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><div class="flex items-center gap-2 sm:gap-3"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f4a4b4]/20 flex items-center justify-center"><span class="material-symbols-outlined text-[#f4a4b4] text-sm">person</span></div><div><div class="font-semibold text-gray-900 text-xs sm:text-sm">${this.escapeHtml(u.nombre)}</div><div class="text-[10px] sm:text-xs text-gray-500">ID: ${u.id}</div></div></div></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 hidden md:table-cell">${u.correo}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><span class="badge-admin">${u.rol === 'administrador' ? 'Admin' : u.rol === 'socio' ? 'Socio' : 'Cliente'}</span></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 hidden lg:table-cell">${u.empresa_nombre || '-'}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4"><span class="status-badge ${u.activo ? 'status-active' : 'status-inactive'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 text-center"><div class="flex gap-1 justify-center"><button onclick="AdminPanelManager.editarUsuario(${u.id})" class="text-blue-500 hover:text-blue-700 p-1" title="Editar"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="AdminPanelManager.toggleUsuarioEstado(${u.id}, ${u.activo})" class="text-orange-500 hover:text-orange-700 p-1" title="${u.activo ? 'Desactivar' : 'Activar'}"><span class="material-symbols-outlined text-sm">${u.activo ? 'visibility_off' : 'visibility'}</span></button><button onclick="AdminPanelManager.eliminarUsuarioCompleto(${u.id}, '${u.rol}', '${this.escapeHtml(u.nombre).replace(/'/g, "\\'")}')" class="text-red-500 hover:text-red-700 p-1" title="Eliminar"><span class="material-symbols-outlined text-sm">delete</span></button></div></td>
+                    </tr>`).join('');
+                } catch (error) { 
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-3 sm:px-6 py-6 sm:py-8 text-center text-red-500 text-xs sm:text-sm">Error al cargar usuarios</td></tr>`; 
+                }
+            },
+            async cargarStats() { 
+                try { 
+                    const stats = await Utils.fetchAPI('/api/stats'); 
+                    document.getElementById('stats-empresas').textContent = stats.empresas || 0; 
+                    document.getElementById('stats-productos-total').textContent = stats.productos || 0; 
+                    document.getElementById('stats-pedidos').textContent = stats.pedidos || 0; 
+                    document.getElementById('stats-solicitudes').textContent = stats.solicitudes_pendientes || 0; 
+                    document.getElementById('stats-clientes').textContent = stats.clientes || 0; 
+                } catch (error) { 
+                    console.error('Error loading stats:', error); 
+                } 
+            },
+            async cargarEmpresasParaSelect() { 
+                try { 
+                    const empresas = await Utils.fetchAPI('/api/empresas'); 
+                    const select = document.getElementById('usuario_empresa_id'); 
+                    if (select && empresas) { 
+                        select.innerHTML = '<option value="">Sin empresa</option>'; 
+                        empresas.forEach(e => { 
+                            const option = document.createElement('option'); 
+                            option.value = e.id; 
+                            option.textContent = e.nombre; 
+                            select.appendChild(option); 
+                        }); 
+                    } 
+                } catch (error) { 
+                    console.error('Error loading empresas:', error); 
+                } 
+            },
+            
+            openProductoModal(producto = null) {
+                const modal = document.getElementById('productoModal');
+                if (producto) {
+                    document.getElementById('producto_edit_id').value = producto.id;
+                    document.getElementById('producto_edit_nombre').value = producto.nombre;
+                    document.getElementById('producto_edit_precio').value = producto.precio;
+                    document.getElementById('producto_edit_stock').value = producto.cantidad_stock;
+                    document.getElementById('producto_edit_categoria').value = producto.categoria || '';
+                    document.getElementById('producto_edit_imagen').value = producto.imagen_url || '';
+                } else {
+                    // Limpiar el formulario si es nuevo
+                    document.getElementById('producto_edit_id').value = '';
+                    document.getElementById('producto_edit_nombre').value = '';
+                    document.getElementById('producto_edit_precio').value = '';
+                    document.getElementById('producto_edit_stock').value = '';
+                    document.getElementById('producto_edit_categoria').value = '';
+                    document.getElementById('producto_edit_imagen').value = '';
+                }
+                modal.classList.add('active');
+            },
+            closeProductoModal() { 
+                document.getElementById('productoModal').classList.remove('active'); 
+            },
+            async saveProducto(event) {
+                event.preventDefault();
+                const id = document.getElementById('producto_edit_id').value;
+                if (!id) {
+                    Utils.showToast('No se puede crear un producto desde aquí. Use el panel de empresa.', 'error');
+                    this.closeProductoModal();
+                    return;
+                }
+                const data = { 
+                    nombre: document.getElementById('producto_edit_nombre').value, 
+                    precio: parseFloat(document.getElementById('producto_edit_precio').value), 
+                    cantidad_stock: parseInt(document.getElementById('producto_edit_stock').value), 
+                    categoria: document.getElementById('producto_edit_categoria').value, 
+                    imagen_url: document.getElementById('producto_edit_imagen').value 
+                };
+                try {
+                    const response = await fetch(`/api/productos/${id}`, { 
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify(data) 
+                    });
+                    if (response.ok) { 
+                        Utils.showToast('✅ Producto actualizado', 'success'); 
+                        this.closeProductoModal(); 
+                        this.cargarProductos(); 
+                    } else { 
+                        const error = await response.json(); 
+                        Utils.showToast(error.error || 'Error al actualizar', 'error'); 
+                    }
+                } catch (error) { 
+                    Utils.showToast('Error de conexión', 'error'); 
+                }
+            },
+            openEmpresaModal(empresa = null) {
+                const modal = document.getElementById('empresaModal');
+                const title = document.getElementById('empresaModalTitle');
+                if (empresa) {
+                    title.textContent = 'Editar Empresa';
+                    document.getElementById('empresa_id').value = empresa.id;
+                    document.getElementById('empresa_nombre').value = empresa.nombre;
+                    document.getElementById('empresa_direccion').value = empresa.direccion || '';
+                    document.getElementById('empresa_telefono').value = empresa.telefono || '';
+                    document.getElementById('empresa_tipo').value = empresa.tipo_producto || 'otro';
+                    const preview = document.getElementById('empresa_logo_preview');
+                    if (empresa.logo_url) { 
+                        preview.style.backgroundImage = `url('${empresa.logo_url}')`; 
+                        preview.innerHTML = ''; 
+                        preview.classList.add('has-image'); 
+                    } else { 
+                        preview.style.backgroundImage = ''; 
+                        preview.innerHTML = '<span class="material-symbols-outlined text-2xl">add_photo_alternate</span>'; 
+                        preview.classList.remove('has-image'); 
+                    }
+                } else {
+                    title.textContent = 'Nueva Empresa';
+                    document.getElementById('empresaForm').reset();
+                    document.getElementById('empresa_id').value = '';
+                    const preview = document.getElementById('empresa_logo_preview');
+                    preview.style.backgroundImage = ''; 
+                    preview.innerHTML = '<span class="material-symbols-outlined text-2xl">add_photo_alternate</span>'; 
+                    preview.classList.remove('has-image');
+                }
+                modal.classList.add('active');
+            },
+            closeEmpresaModal() { 
+                document.getElementById('empresaModal').classList.remove('active'); 
+            },
+            previewEmpresaLogo(input) { 
+                if (input.files && input.files[0]) { 
+                    const reader = new FileReader(); 
+                    const preview = document.getElementById('empresa_logo_preview'); 
+                    reader.onload = function(e) { 
+                        preview.style.backgroundImage = `url('${e.target.result}')`; 
+                        preview.innerHTML = ''; 
+                        preview.classList.add('has-image'); 
+                    }; 
+                    reader.readAsDataURL(input.files[0]); 
+                } 
+            },
+            async saveEmpresa(event) {
+                event.preventDefault();
+                const id = document.getElementById('empresa_id').value;
+                const data = { 
+                    nombre: document.getElementById('empresa_nombre').value, 
+                    direccion: document.getElementById('empresa_direccion').value, 
+                    telefono: document.getElementById('empresa_telefono').value, 
+                    tipo_producto: document.getElementById('empresa_tipo').value 
+                };
+                const logoFile = document.getElementById('empresa_logo_file').files[0];
+                try {
+                    let logoUrl = null;
+                    if (logoFile) {
+                        const formData = new FormData();
+                        formData.append('logo', logoFile);
+                        formData.append('empresa_id', id || 'new');
+                        const uploadResponse = await fetch('/api/upload/empresa/logo', { method: 'POST', body: formData });
+                        const uploadData = await uploadResponse.json();
+                        if (uploadData.success) logoUrl = uploadData.logo_url;
+                    }
+                    if (logoUrl) data.logo_url = logoUrl;
+                    let response;
+                    if (id) { 
+                        response = await fetch(`/api/empresas/${id}/completo`, { 
+                            method: 'PUT', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify(data) 
+                        }); 
+                    } else { 
+                        response = await fetch('/api/empresas', { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify(data) 
+                        }); 
+                    }
+                    if (response.ok) { 
+                        Utils.showToast(id ? '✅ Empresa actualizada' : '✅ Empresa creada', 'success'); 
+                        this.closeEmpresaModal(); 
+                        this.cargarEmpresas(); 
+                        this.cargarEmpresasParaSelect(); 
+                        this.cargarStats();
+                    } else { 
+                        const error = await response.json(); 
+                        Utils.showToast(error.error || 'Error al guardar', 'error'); 
+                    }
+                } catch (error) { 
+                    console.error('Error saving empresa:', error); 
+                    Utils.showToast('Error de conexión', 'error'); 
+                }
+            },
+            async editarEmpresa(id) { 
+                const empresa = this.allEmpresas.find(e => e.id === id); 
+                if (empresa) this.openEmpresaModal(empresa); 
+            },
+            async toggleEmpresaEstado(id, currentStatus) { 
+                try { 
+                    const response = await fetch(`/api/empresas/${id}/toggle`, { 
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ activo: !currentStatus }) 
+                    }); 
+                    if (response.ok) { 
+                        Utils.showToast(currentStatus ? 'Empresa desactivada' : 'Empresa activada', 'success'); 
+                        this.cargarEmpresas(); 
+                        this.cargarStats();
+                    } else { 
+                        Utils.showToast('Error al cambiar estado', 'error'); 
+                    }
+                } catch (error) { 
+                    Utils.showToast('Error de conexión', 'error'); 
+                } 
+            },
+            async eliminarEmpresa(id) { 
+                if (!confirm('¿Estás seguro de eliminar esta empresa?')) return; 
+                try { 
+                    const response = await fetch(`/api/empresas/${id}`, { method: 'DELETE' }); 
+                    if (response.ok) { 
+                        Utils.showToast('Empresa eliminada', 'success'); 
+                        this.cargarEmpresas(); 
+                        this.cargarEmpresasParaSelect(); 
+                        this.cargarStats();
+                    } else { 
+                        Utils.showToast('Error al eliminar', 'error'); 
+                    }
+                } catch (error) { 
+                    Utils.showToast('Error de conexión', 'error'); 
+                } 
+            },
+            
+            openUsuarioModal(usuario = null) {
+                const modal = document.getElementById('usuarioModal');
+                const title = document.getElementById('usuarioModalTitle');
+                const passwordField = document.getElementById('password-field');
+                if (usuario) {
+                    title.textContent = 'Editar Usuario';
+                    document.getElementById('usuario_id').value = usuario.id;
+                    document.getElementById('usuario_nombre').value = usuario.nombre;
+                    document.getElementById('usuario_correo').value = usuario.correo;
+                    document.getElementById('usuario_rol').value = usuario.rol;
+                    document.getElementById('usuario_empresa_id').value = usuario.empresa_id || '';
+                    document.getElementById('usuario_password').required = false;
+                    document.getElementById('usuario_password').placeholder = 'Dejar en blanco para no cambiar';
+                    if (passwordField) passwordField.style.display = 'block';
+                } else {
+                    title.textContent = 'Nuevo Usuario';
+                    document.getElementById('usuarioForm').reset();
+                    document.getElementById('usuario_id').value = '';
+                    document.getElementById('usuario_password').required = true;
+                    document.getElementById('usuario_password').placeholder = 'Ingrese contraseña';
+                    if (passwordField) passwordField.style.display = 'block';
+                }
+                modal.classList.add('active');
+            },
+            closeUsuarioModal() { 
+                document.getElementById('usuarioModal').classList.remove('active'); 
+            },
+            async saveUsuario(event) {
+                event.preventDefault();
+                const id = document.getElementById('usuario_id').value;
+                const data = { 
+                    nombre: document.getElementById('usuario_nombre').value, 
+                    correo: document.getElementById('usuario_correo').value, 
+                    rol: document.getElementById('usuario_rol').value, 
+                    empresa_id: document.getElementById('usuario_empresa_id').value || null 
+                };
+                const password = document.getElementById('usuario_password').value;
+                try {
+                    let response;
+                    if (id) { 
+                        response = await fetch(`/api/usuarios/${id}/actualizar-completo`, { 
+                            method: 'PUT', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify(data) 
+                        }); 
+                    } else {
+                        if (!password) { 
+                            Utils.showToast('La contraseña es requerida para nuevos usuarios', 'error'); 
+                            return; 
+                        }
+                        response = await fetch('/api/registro', { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify({ 
+                                nombre: data.nombre, 
+                                email: data.correo, 
+                                password: password, 
+                                rol: data.rol, 
+                                empresa_id: data.empresa_id 
+                            }) 
+                        });
+                    }
+                    const result = await response.json();
+                    if (response.ok) { 
+                        Utils.showToast(id ? '✅ Usuario actualizado' : '✅ Usuario creado', 'success'); 
+                        this.closeUsuarioModal(); 
+                        this.cargarUsuarios(); 
+                        this.cargarStats();
+                    } else { 
+                        Utils.showToast(result.error || 'Error al guardar', 'error'); 
+                    }
+                } catch (error) { 
+                    console.error('Error saving usuario:', error); 
+                    Utils.showToast('Error de conexión', 'error'); 
+                }
+            },
+            async eliminarUsuarioCompleto(id, rol, nombre) {
+                if (rol === 'administrador') { 
+                    Utils.showToast('No se puede eliminar un administrador', 'error'); 
+                    return; 
+                }
+                let mensajeConfirmacion = '¿Estás seguro de eliminar este usuario?';
+                if (rol === 'socio') { 
+                    mensajeConfirmacion = `⚠️ ADVERTENCIA: ${nombre} es un SOCIO.\n\nSe eliminarán TODOS sus datos:\n- Empresa\n- Productos\n- Pedidos relacionados\n- Carritos\n\nEsta acción NO se puede deshacer.\n\n¿Confirmas la eliminación?`; 
+                }
+                if (!confirm(mensajeConfirmacion)) return;
+                try {
+                    let response;
+                    if (rol === 'socio') { 
+                        response = await fetch(`/api/usuarios/${id}/eliminar-completo`, { method: 'DELETE' }); 
+                    } else { 
+                        response = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' }); 
+                    }
+                    if (response.ok) { 
+                        Utils.showToast(rol === 'socio' ? '🗑️ Socio y todos sus datos eliminados' : 'Usuario eliminado', 'success'); 
+                        this.cargarUsuarios(); 
+                        this.cargarEmpresas(); 
+                        this.cargarStats();
+                    } else { 
+                        const error = await response.json(); 
+                        Utils.showToast(error.error || 'Error al eliminar', 'error'); 
+                    }
+                } catch (error) { 
+                    console.error('Error deleting usuario:', error); 
+                    Utils.showToast('Error de conexión', 'error'); 
+                }
+            },
+            async editarUsuario(id) { 
+                const usuario = this.allUsuarios.find(u => u.id === id); 
+                if (usuario) this.openUsuarioModal(usuario); 
+            },
+            async toggleUsuarioEstado(id, currentStatus) { 
+                try { 
+                    const response = await fetch(`/api/usuarios/${id}/toggle`, { 
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ activo: !currentStatus }) 
+                    }); 
+                    if (response.ok) { 
+                        Utils.showToast(currentStatus ? 'Usuario desactivado' : 'Usuario activado', 'success'); 
+                        this.cargarUsuarios(); 
+                        this.cargarStats();
+                    } else { 
+                        Utils.showToast('Error al cambiar estado', 'error'); 
+                    }
+                } catch (error) { 
+                    Utils.showToast('Error de conexión', 'error'); 
+                } 
+            },
+            setupSearch() {
+                const searchInput = document.getElementById('search-input');
+                if (!searchInput) return;
+                searchInput.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const sections = ['solicitudes', 'empresas', 'productos', 'usuarios'];
+                    sections.forEach(section => {
+                        const rows = document.querySelectorAll(`#section-${section} tbody tr`);
+                        rows.forEach(row => { 
+                            row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none'; 
+                        });
+                    });
+                });
+            },
+            escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                });
+            }
+        };
+
+        // Asignar el método escapeHtml al AdminPanelManager
+        AdminPanelManager.escapeHtml = function(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            AdminPanelManager.init();
+            document.addEventListener('click', (e) => { 
+                if (window.innerWidth <= 768) { 
+                    const sidebar = document.getElementById('sidebar'); 
+                    const menuBtn = document.getElementById('mobileMenuButton'); 
+                    if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) { 
+                        sidebar.classList.remove('open'); 
+                        document.getElementById('sidebarOverlay').classList.remove('open'); 
+                    } 
+                } 
+            });
+        });
+
+        window.AdminPanelManager = AdminPanelManager;
+        window.SolicitudManager = SolicitudManager;
+        window.AuthManager = AuthManager;
+        window.Utils = Utils;
+        window.clearFilters = clearFilters;
+    </script>
+</body>
+</html>
