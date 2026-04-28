@@ -508,3 +508,20 @@ p {
 .dark .product-price-fixed {
     color: #f4a4b4;
 }
+
+/* Forzar que el botón siempre sea visible */
+.product-card-fixed {
+    min-height: auto !important;
+    max-height: none !important;
+    height: auto !important;
+}
+
+.product-content-fixed {
+    justify-content: space-between;
+    flex: 1;
+}
+
+.product-button-fixed {
+    margin-top: 12px;
+    flex-shrink: 0;
+}
