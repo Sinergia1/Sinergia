@@ -1838,45 +1838,42 @@
             },
             
             renderProductosGrid() {
-                const grid = document.getElementById('productos-grid-container');
-                if (!grid) return;
-                
-                let filtered = [...this.productos];
-                if (this.currentFilterCategory !== 'todos') {
-                    filtered = filtered.filter(p => p.categoria === this.currentFilterCategory);
-                }
-                if (this.currentSearchTerm) {
-                    const term = this.currentSearchTerm.toLowerCase();
-                    filtered = filtered.filter(p => p.nombre.toLowerCase().includes(term));
-                }
-                
-                if (filtered.length === 0) {
-                    grid.innerHTML = `<div class="empty-state col-span-full"><span class="material-symbols-outlined text-5xl text-gray-300 mb-3">inventory_2</span><p class="text-gray-500">No se encontraron productos</p><button onclick="openProductModal()" class="mt-4 bg-[#f4a4b4] text-[#0d2922] px-6 py-2 rounded-lg font-bold text-sm">Agregar producto</button></div>`;
-                    return;
-                }
-                
-                grid.innerHTML = filtered.map(p => `
-                    <div class="product-card relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all">
-                        <div class="absolute top-2 right-2 flex gap-1 z-10">
-                            <button onclick="openEditProductModal(${p.id})" class="bg-white rounded-full p-1.5 shadow-md hover:bg-blue-500 hover:text-white transition-all">
-                                <span class="material-symbols-outlined text-sm">edit</span>
-                            </button>
-                            <button onclick="openDeleteModal(${p.id}, '${escapeHtml(p.nombre).replace(/'/g, "\\'")}')" class="bg-white rounded-full p-1.5 shadow-md hover:bg-red-500 hover:text-white transition-all">
-                                <span class="material-symbols-outlined text-sm">delete</span>
-                            </button>
-                        </div>
-                        <div class="aspect-square bg-cover bg-center" style="background-image: url('${p.imagen_url || 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&h=400&fit=crop'}');"></div>
-                        <div class="p-4">
-                            <h3 class="font-bold text-[#0d2922] text-lg mb-1 truncate">${escapeHtml(p.nombre)}</h3>
-                            <p class="text-sm text-gray-500 mb-2">${escapeHtml(p.categoria)}</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-xl font-bold text-[#f4a4b4]">${Utils.formatPrice(p.precio)}</span>
-                                <span class="text-xs ${p.cantidad_stock > 0 ? 'text-green-600' : 'text-red-600'}">Stock: ${p.cantidad_stock}</span>
-                            </div>
-                        </div>
+    const grid = document.getElementById('productos-grid-container');
+    if (!grid) return;
+    
+    let filtered = [...this.productos];
+    // ... filtros ...
+    
+    grid.innerHTML = filtered.map(p => {
+        // 🔥 AQUÍ ESTÁ EL PROBLEMA - Verifica que la URL sea correcta
+        const imagenUrl = p.imagen_url || 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&h=400&fit=crop';
+        
+        // Para depuración: imprime la URL en consola
+        console.log('Producto:', p.nombre, 'Imagen URL:', imagenUrl);
+        
+        return `
+            <div class="product-card relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all">
+                <div class="absolute top-2 right-2 flex gap-1 z-10">
+                    <button onclick="openEditProductModal(${p.id})" class="bg-white rounded-full p-1.5 shadow-md hover:bg-blue-500 hover:text-white transition-all">
+                        <span class="material-symbols-outlined text-sm">edit</span>
+                    </button>
+                    <button onclick="openDeleteModal(${p.id}, '${escapeHtml(p.nombre)}')" class="bg-white rounded-full p-1.5 shadow-md hover:bg-red-500 hover:text-white transition-all">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                </div>
+                <div class="aspect-square bg-cover bg-center" style="background-image: url('${imagenUrl}');"></div>
+                <div class="p-4">
+                    <h3 class="font-bold text-[#0d2922] text-lg mb-1 truncate">${escapeHtml(p.nombre)}</h3>
+                    <p class="text-sm text-gray-500 mb-2">${escapeHtml(p.categoria)}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold text-[#f4a4b4]">${Utils.formatPrice(p.precio)}</span>
+                        <span class="text-xs ${p.cantidad_stock > 0 ? 'text-green-600' : 'text-red-600'}">Stock: ${p.cantidad_stock}</span>
                     </div>
-                `).join('');
-            },
+                </div>
+            </div>
+        `;
+    }).join('');
+},
             
             filterProducts() {
                 this.currentSearchTerm = document.getElementById('searchProductInput')?.value || '';
@@ -1895,52 +1892,87 @@
             },
             
             async createProduct(formData) {
-                const user = AuthManager.getCurrentUser();
-                if (!user || !user.empresa_id) { Utils.showToast('Error: No tienes una empresa asociada', 'error'); return false; }
-                
-                const btn = document.getElementById('productSubmitBtn');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> Publicando...';
-                btn.disabled = true;
-                
-                try {
-                    let imagenUrl = null;
-                    if (formData.imagenFile) {
-                        imagenUrl = await Utils.uploadProductImage(formData.imagenFile);
-                    }
-                    
-                    const productoData = {
-                        empresa_id: user.empresa_id,
-                        nombre: formData.nombre,
-                        precio: formData.precio,
-                        categoria: formData.categoriaNombre,
-                        imagen_url: imagenUrl,
-                        cantidad_stock: formData.stock
-                    };
-                    
-                    const response = await fetch('/api/productos', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(productoData)
-                    });
-                    
-                    if (response.ok) {
-                        Utils.showToast('✅ Producto publicado exitosamente');
-                        await this.cargarProductos();
-                        CategoryManager.refreshAll();
-                        return true;
-                    } else {
-                        Utils.showToast('Error al publicar producto', 'error');
-                        return false;
-                    }
-                } catch (error) {
-                    Utils.showToast('Error al publicar producto', 'error');
-                    return false;
-                } finally {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
-            },
+    const user = AuthManager.getCurrentUser();
+    if (!user || !user.empresa_id) { 
+        Utils.showToast('Error: No tienes una empresa asociada', 'error'); 
+        return false; 
+    }
+    
+    // Mostrar loading
+    const btn = document.getElementById('productSubmitBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> Publicando...';
+    btn.disabled = true;
+    
+    try {
+        let imagenUrl = null;
+        
+        // PASO 1: Subir la imagen a Cloudinary
+        if (formData.imagenFile) {
+            const formDataImg = new FormData();
+            formDataImg.append('imagen', formData.imagenFile);
+            
+            console.log('📤 Subiendo imagen a Cloudinary...');
+            const uploadResponse = await fetch('/api/upload/producto', {
+                method: 'POST',
+                body: formDataImg
+            });
+            
+            const uploadData = await uploadResponse.json();
+            console.log('Respuesta Cloudinary:', uploadData);
+            
+            if (uploadData.success && uploadData.imagen_url) {
+                imagenUrl = uploadData.imagen_url;
+                console.log('✅ Imagen subida exitosamente:', imagenUrl);
+            } else {
+                console.error('❌ Error subiendo imagen:', uploadData);
+                Utils.showToast('Error al subir la imagen', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return false;
+            }
+        } else {
+            // Si no hay imagen, usar una por defecto
+            imagenUrl = 'https://res.cloudinary.com/dx2shhdt/image/upload/v1/localmarket/productos/default_product.jpg';
+        }
+        
+        // PASO 2: Crear el producto con la URL de la imagen
+        const productoData = {
+            empresa_id: user.empresa_id,
+            nombre: formData.nombre,
+            precio: formData.precio,
+            categoria: formData.categoriaNombre,
+            imagen_url: imagenUrl,  // 👈 Usar la URL de Cloudinary
+            cantidad_stock: formData.stock
+        };
+        
+        console.log('📦 Creando producto:', productoData);
+        
+        const response = await fetch('/api/productos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(productoData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            Utils.showToast('✅ Producto publicado exitosamente');
+            await this.cargarProductos();
+            return true;
+        } else {
+            Utils.showToast(result.error || 'Error al publicar producto', 'error');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error:', error);
+        Utils.showToast('Error al publicar producto', 'error');
+        return false;
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+},
             
             async updateProduct(productId, formData) {
                 const btn = document.getElementById('productSubmitBtn');
@@ -2007,11 +2039,15 @@
         };
         
         async function openEditProductModal(productId) {
-            const product = await ProductManager.getProductById(productId);
-            if (product) {
-                openProductModal(product);
-            }
-        }
+    const product = await ProductManager.getProductById(productId);
+    if (product) {
+        console.log('Editando producto:', product.nombre);
+        console.log('Imagen URL actual:', product.imagen_url);  // 👈 Debug
+        
+        // Asegurar que la URL se pasa correctamente al modal
+        openProductModal(product);
+    }
+}
 
         // ===== PANEL DE EMPRESA =====
         const EmpresaPanelManager = {
