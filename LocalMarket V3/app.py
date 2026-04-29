@@ -13,6 +13,65 @@ import secrets
 import string
 from werkzeug.utils import secure_filename
 
+# app.py - Configuración de Cloudinary (SIN columnas adicionales en BD)
+# app.py - AL PRINCIPIO del archivo, después de los imports
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# Configuración de Cloudinary (FORZAR USO DE CLOUDINARY)
+cloudinary.config(
+    cloud_name='dx2shhidt',
+    api_key='135781563238399',
+    api_secret='cyLMkO8cewxlpNGwDk3e5QIpdLk',
+    secure=True
+)
+
+print("✅ Cloudinary configurado correctamente")
+print(f"   Cloud Name: {cloudinary.config().cloud_name}")
+
+def subir_imagen_a_cloudinary(file, carpeta="localmarket/productos"):
+    """Sube una imagen a Cloudinary y retorna la URL"""
+    try:
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder=carpeta,
+            allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp']
+        )
+        return upload_result['secure_url']
+    except Exception as e:
+        print(f"❌ Error subiendo imagen: {e}")
+        return None
+
+def extraer_public_id_de_url(url):
+    """Extrae el public_id de una URL de Cloudinary"""
+    if not url or 'cloudinary' not in url:
+        return None
+    # Usar cloud_name correcto: dx2shhidt
+    try:
+        parts = url.split('/upload/')
+        if len(parts) > 1:
+            public_id_with_version = parts[1].split('.')[0]
+            if '/' in public_id_with_version:
+                public_id = public_id_with_version.split('/', 1)[1]
+            else:
+                public_id = public_id_with_version
+            return public_id
+    except:
+        pass
+    return None
+
+def eliminar_imagen_de_cloudinary_por_url(url):
+    """Elimina una imagen de Cloudinary usando su URL"""
+    public_id = extraer_public_id_de_url(url)
+    if public_id:
+        try:
+            result = cloudinary.uploader.destroy(public_id)
+            return result.get('result') == 'ok'
+        except Exception as e:
+            print(f"Error eliminando imagen: {e}")
+    return False
+
 # Configurar logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -36,19 +95,14 @@ app.config['MAIL_ASCII_ATTACHMENTS'] = False
 app.config['MAIL_SUPPRESS_SEND'] = False
 
 # ===== CONFIGURACIÓN PARA SUBIDA DE ARCHIVOS =====
-UPLOAD_FOLDER = 'static/uploads'
-PRODUCTOS_FOLDER = os.path.join(UPLOAD_FOLDER, 'productos')
-PERFILES_FOLDER = os.path.join(UPLOAD_FOLDER, 'perfiles')
-EMPRESAS_FOLDER = os.path.join(UPLOAD_FOLDER, 'empresas')
+UPLOAD_FOLDER = 'cloudinary_only'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB máximo
 
 # Crear carpetas necesarias
-os.makedirs(PRODUCTOS_FOLDER, exist_ok=True)
-os.makedirs(PERFILES_FOLDER, exist_ok=True)
-os.makedirs(EMPRESAS_FOLDER, exist_ok=True)
+
 
 mail = Mail(app)
 
@@ -133,42 +187,49 @@ def serve_files(filename):
 # ===== API ENDPOINTS PARA SUBIDA DE IMÁGENES =
 # ============================================
 
-@app.route('/api/upload/producto', methods=['POST'])
-def upload_producto_imagen():
-    """Sube una imagen de producto"""
+# ===== API ENDPOINTS PARA SUBIDA DE IMÁGENES =====
+
+@app.route('/api/productos/<int:producto_id>', methods=['DELETE'])
+def eliminar_producto(producto_id):
+    """Elimina un producto y su imagen de Cloudinary"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Error de conexión'}), 500
+    
+    cursor = conn.cursor(dictionary=True)
     try:
-        if 'imagen' not in request.files:
-            return jsonify({'error': 'No se envió ninguna imagen'}), 400
+        # Obtener la URL de la imagen antes de eliminar
+        cursor.execute("SELECT imagen_url FROM productos WHERE id = %s", (producto_id,))
+        resultado = cursor.fetchone()
+        imagen_url = resultado['imagen_url'] if resultado else None
         
-        file = request.files['imagen']
+        # Eliminar la imagen de Cloudinary si existe
+        if imagen_url and 'cloudinary' in imagen_url:
+            public_id = extraer_public_id_de_url(imagen_url)
+            if public_id:
+                try:
+                    cloudinary.uploader.destroy(public_id)
+                    print(f"🗑️ Imagen eliminada de Cloudinary: {public_id}")
+                except Exception as e:
+                    print(f"Error eliminando imagen: {e}")
         
-        if file.filename == '':
-            return jsonify({'error': 'Nombre de archivo vacío'}), 400
+        # Desactivar el producto (soft delete)
+        cursor.execute("UPDATE productos SET activo = 0 WHERE id = %s", (producto_id,))
+        conn.commit()
         
-        if not allowed_file(file.filename):
-            return jsonify({'error': 'Tipo de archivo no permitido'}), 400
-        
-        filename = secure_filename(file.filename)
-        name, ext = os.path.splitext(filename)
-        new_filename = f"producto_{int(time.time())}_{secrets.token_hex(4)}{ext}"
-        
-        filepath = os.path.join(PRODUCTOS_FOLDER, new_filename)
-        file.save(filepath)
-        
-        imagen_url = f"/static/uploads/productos/{new_filename}"
-        
-        return jsonify({
-            'success': True,
-            'imagen_url': imagen_url
-        })
-        
+        return jsonify({'success': True, 'message': 'Producto eliminado'})
     except Exception as e:
-        print(f"❌ Error subiendo imagen: {e}")
+        conn.rollback()
+        print(f"Error eliminando producto: {e}")
         return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 
 @app.route('/api/upload/perfil', methods=['POST'])
 def upload_perfil_imagen():
-    """Sube una imagen de perfil"""
+    """Sube una foto de perfil SOLO a Cloudinary"""
     try:
         if 'foto' not in request.files:
             return jsonify({'error': 'No se envió ninguna imagen'}), 400
@@ -185,45 +246,46 @@ def upload_perfil_imagen():
         if not allowed_file(file.filename):
             return jsonify({'error': 'Tipo de archivo no permitido'}), 400
         
-        filename = secure_filename(file.filename)
-        name, ext = os.path.splitext(filename)
-        new_filename = f"perfil_{usuario_id}_{int(time.time())}{ext}"
+        # Subir a Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder="localmarket/perfiles",
+            allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp']
+        )
         
-        filepath = os.path.join(PERFILES_FOLDER, new_filename)
-        file.save(filepath)
+        foto_url = upload_result['secure_url']
+        print(f"✅ Foto de perfil subida: {foto_url}")
         
-        foto_url = f"/static/uploads/perfiles/{new_filename}"
-        
+        # Actualizar en base de datos
         conn = get_db_connection()
-        if not conn:
-            return jsonify({'error': 'Error de conexión'}), 500
+        if conn:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(
+                    "UPDATE usuarios SET foto_url = %s WHERE id = %s",
+                    (foto_url, usuario_id)
+                )
+                conn.commit()
+                print(f"✅ Base de datos actualizada para usuario {usuario_id}")
+            except Exception as e:
+                print(f"Error actualizando BD: {e}")
+            finally:
+                cursor.close()
+                conn.close()
         
-        cursor = conn.cursor()
-        try:
-            cursor.execute(
-                "UPDATE usuarios SET foto_url = %s WHERE id = %s",
-                (foto_url, usuario_id)
-            )
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'foto_url': foto_url
-            })
-        except Exception as e:
-            conn.rollback()
-            return jsonify({'error': str(e)}), 500
-        finally:
-            cursor.close()
-            conn.close()
-            
+        return jsonify({
+            'success': True,
+            'foto_url': foto_url
+        })
+        
     except Exception as e:
-        print(f"❌ Error subiendo foto de perfil: {e}")
+        print(f"❌ Error subiendo foto: {e}")
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/upload/empresa/logo', methods=['POST'])
 def upload_empresa_logo():
-    """Sube un logo de empresa"""
+    """Sube un logo de empresa SOLO a Cloudinary"""
     try:
         if 'logo' not in request.files:
             return jsonify({'error': 'No se envió ninguna imagen'}), 400
@@ -240,40 +302,101 @@ def upload_empresa_logo():
         if not allowed_file(file.filename):
             return jsonify({'error': 'Tipo de archivo no permitido'}), 400
         
-        filename = secure_filename(file.filename)
-        name, ext = os.path.splitext(filename)
-        new_filename = f"logo_empresa_{empresa_id}_{int(time.time())}{ext}"
+        # Subir a Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder="localmarket/empresas",
+            allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp']
+        )
         
-        filepath = os.path.join(EMPRESAS_FOLDER, new_filename)
-        file.save(filepath)
+        logo_url = upload_result['secure_url']
+        print(f"✅ Logo subido: {logo_url}")
         
-        logo_url = f"/static/uploads/empresas/{new_filename}"
-        
+        # Actualizar en base de datos
         conn = get_db_connection()
-        if not conn:
-            return jsonify({'error': 'Error de conexión'}), 500
+        if conn:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(
+                    "UPDATE empresa SET logo_url = %s WHERE id = %s",
+                    (logo_url, empresa_id)
+                )
+                conn.commit()
+                print(f"✅ Base de datos actualizada para empresa {empresa_id}")
+            except Exception as e:
+                print(f"Error actualizando BD: {e}")
+            finally:
+                cursor.close()
+                conn.close()
         
-        cursor = conn.cursor()
-        try:
-            cursor.execute(
-                "UPDATE empresa SET logo_url = %s WHERE id = %s",
-                (logo_url, empresa_id)
-            )
-            conn.commit()
-            
-            return jsonify({
-                'success': True,
-                'logo_url': logo_url
-            })
-        except Exception as e:
-            conn.rollback()
-            return jsonify({'error': str(e)}), 500
-        finally:
-            cursor.close()
-            conn.close()
+        return jsonify({
+            'success': True,
+            'logo_url': logo_url
+        })
+        
+    except Exception as e:
+        print(f"❌ Error subiendo logo: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/upload/producto', methods=['POST'])
+def upload_producto_imagen():
+    """Sube una imagen de producto SOLO a Cloudinary"""
+    try:
+        if 'imagen' not in request.files:
+            return jsonify({'error': 'No se envió ninguna imagen'}), 400
+        
+        file = request.files['imagen']
+        
+        if file.filename == '':
+            return jsonify({'error': 'Nombre de archivo vacío'}), 400
+        
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'Tipo de archivo no permitido'}), 400
+        
+        # SUBIR DIRECTAMENTE A CLOUDINARY (sin guardar localmente)
+        print(f"📤 Subiendo imagen a Cloudinary: {file.filename}")
+        
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder="localmarket/productos",
+            allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp'],
+            overwrite=True,
+            unique_filename=True
+        )
+        
+        imagen_url = upload_result['secure_url']
+        print(f"✅ Imagen subida a Cloudinary: {imagen_url}")
+        
+        return jsonify({
+            'success': True,
+            'imagen_url': imagen_url
+        })
+        
+    except Exception as e:
+        print(f"❌ Error subiendo imagen a Cloudinary: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/api/eliminar-imagen', methods=['DELETE'])
+def eliminar_imagen_cloudinary():
+    """Elimina una imagen de Cloudinary cuando se borra un producto"""
+    try:
+        data = request.json
+        public_id = data.get('public_id')
+        
+        if not public_id:
+            return jsonify({'error': 'Se requiere public_id'}), 400
+        
+        # Eliminar de Cloudinary
+        result = cloudinary.uploader.destroy(public_id)
+        
+        if result.get('result') == 'ok':
+            return jsonify({'success': True, 'message': 'Imagen eliminada'})
+        else:
+            return jsonify({'error': 'Error al eliminar imagen'}), 500
             
     except Exception as e:
-        print(f"❌ Error subiendo logo de empresa: {e}")
+        print(f"❌ Error eliminando imagen: {e}")
         return jsonify({'error': str(e)}), 500
 
 # ============================================
@@ -403,8 +526,8 @@ def get_todos_productos_admin():
 
 @app.route('/api/productos', methods=['POST'])
 def crear_producto():
-    """Crea un nuevo producto"""
     data = request.json
+    print(f"📦 Creando producto - URL de imagen: {data.get('imagen_url')}")  # 
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Error de conexión'}), 500
@@ -443,14 +566,35 @@ def crear_producto():
 
 @app.route('/api/productos/<int:producto_id>', methods=['PUT'])
 def actualizar_producto(producto_id):
-    """Actualiza un producto"""
     data = request.json
+    
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Error de conexión'}), 500
     
     cursor = conn.cursor()
     try:
+        # 🔍 Obtener la imagen actual ANTES de actualizar
+        cursor.execute("SELECT imagen_url FROM productos WHERE id = %s", (producto_id,))
+        resultado = cursor.fetchone()
+        imagen_anterior = resultado[0] if resultado else None
+        
+        nueva_imagen_url = data.get('imagen_url')
+        
+        # 🗑️ Si hay una imagen nueva y es diferente a la anterior, eliminar la anterior
+        if (imagen_anterior and nueva_imagen_url and 
+            imagen_anterior != nueva_imagen_url and 
+            'cloudinary' in imagen_anterior):
+            
+            public_id = extraer_public_id_de_url(imagen_anterior)
+            if public_id:
+                try:
+                    cloudinary.uploader.destroy(public_id)
+                    print(f"🗑️ Imagen anterior eliminada de Cloudinary: {public_id}")
+                except Exception as e:
+                    print(f"⚠️ Error eliminando imagen anterior: {e}")
+        
+        # Actualizar el producto
         cursor.execute("""
             UPDATE productos 
             SET nombre = %s, precio = %s, categoria = %s, 
@@ -460,7 +604,7 @@ def actualizar_producto(producto_id):
             data['nombre'],
             data['precio'],
             data.get('categoria', ''),
-            data.get('imagen_url'),
+            nueva_imagen_url,
             data['cantidad_stock'],
             producto_id
         ))
@@ -470,25 +614,7 @@ def actualizar_producto(producto_id):
         
     except Exception as e:
         conn.rollback()
-        return jsonify({'error': str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/api/productos/<int:producto_id>', methods=['DELETE'])
-def eliminar_producto(producto_id):
-    """Elimina (desactiva) un producto"""
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({'error': 'Error de conexión'}), 500
-    
-    cursor = conn.cursor()
-    try:
-        cursor.execute("UPDATE productos SET activo = 0 WHERE id = %s", (producto_id,))
-        conn.commit()
-        return jsonify({'success': True, 'message': 'Producto eliminado'})
-    except Exception as e:
-        conn.rollback()
+        print(f"❌ Error actualizando producto: {e}")
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
@@ -1964,13 +2090,6 @@ if __name__ == '__main__':
     print("🚀 INICIANDO SERVIDOR LOKALMARKET")
     print("=" * 50)
     
-    os.makedirs(PRODUCTOS_FOLDER, exist_ok=True)
-    os.makedirs(PERFILES_FOLDER, exist_ok=True)
-    os.makedirs(EMPRESAS_FOLDER, exist_ok=True)
-    
-    print(f"📁 Carpeta de productos: {PRODUCTOS_FOLDER}")
-    print(f"📁 Carpeta de perfiles: {PERFILES_FOLDER}")
-    print(f"📁 Carpeta de logos empresas: {EMPRESAS_FOLDER}")
     
     print("\n📧 Configuración de email:")
     print(f"   MAIL_SERVER: {app.config['MAIL_SERVER']}")
