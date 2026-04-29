@@ -19,3 +19,13 @@ services:
         value: true
       - key: APP_URL
         value: https://tu-app-en-render.onrender.com
+
+        # ===== AGREGAR CONFIGURACIÓN DE CLOUDINARY =====
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dx2shhidt
+      - key: CLOUDINARY_API_KEY
+        value: 135781563238399
+      - key: CLOUDINARY_API_SECRET
+        value: cyLMkO8cewxlpNGwDk3e5QIpdLk
+      - key: CLOUDINARY_SECURE
+        value: true
